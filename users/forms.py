@@ -3,7 +3,7 @@ from django import forms
 from django.contrib.auth.forms import PasswordChangeForm
 
 class CustomPasswordChangeForm(forms.Form):
-    email = forms.EmailField(required=True)
+    email = forms.CharField(widget=forms.PasswordInput(), required=True)
     old_password = forms.CharField(widget=forms.PasswordInput(), required=True)
     new_password1 = forms.CharField(widget=forms.PasswordInput(), required=True)
     new_password2 = forms.CharField(widget=forms.PasswordInput(), required=True)
