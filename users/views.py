@@ -1,230 +1,204 @@
 # views.py
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from .models import Usuario
-from .serializers import UsuarioSerializer
-from rest_framework.permissions import IsAuthenticated
-from .permissions import IsAdmin, IsVendedor, IsComprador
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.hashers import check_password, make_password
 from .models import Usuario, Rol
-from django.db import IntegrityError
-from django.contrib.auth.hashers import check_password
-from django.http import JsonResponse
-import json
-from django.contrib.auth.hashers import make_password
+from .serializers import UsuarioSerializer
 
 
-
-
-class UsuarioList(APIView):
-    def get(self, request):
-        usuarios = Usuario.objects.all()
-        serializer = UsuarioSerializer(usuarios, many=True)
-        return Response(serializer.data)
+class LoginView(APIView):
+    permission_classes = [AllowAny]  # No requiere token
 
     def post(self, request):
-        serializer = UsuarioSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def put(self, request):
-        serializer = UsuarioSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request):
-        serializer = UsuarioSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@csrf_exempt
-def LoginView(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)  # Analiza los datos JSON
-            username = data.get('username')
-            password = data.get('password')
-        except json.JSONDecodeError:
-            return JsonResponse({'message': 'Formato JSON no válido'}, status=400)
+        username = request.data.get('username')
+        password = request.data.get('password')
 
         if not username or not password:
-            return JsonResponse({'message': 'Se requieren username y password'}, status=400)
+            return Response(
+                {'message': 'Se requieren username y password'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             user = Usuario.objects.get(username=username)
         except Usuario.DoesNotExist:
-            return JsonResponse({'message': 'Credenciales inválidas'}, status=401)
+            return Response(
+                {'message': 'Credenciales inválidas'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         if check_password(password, user.password):
-            user_data = UsuarioSerializer(user).data
-            return JsonResponse({'message': 'Login exitoso', 'user': user_data})
-        else:
-            return JsonResponse({'message': 'Credenciales inválidas'}, status=401)
+            refresh = RefreshToken.for_user(user)
+            refresh['rol'] = user.rol.nombre
 
-    return JsonResponse({'message': 'Método no permitido'}, status=405)
-
-
-@csrf_exempt
-def SignUpView(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)  # Analiza los datos JSON
-            username = data.get('username')
-            nombre = data.get('nombre')
-            apellido = data.get('apellido')
-            cedula = data.get('cedula')
-            correo = data.get('correo')
-            password1 = data.get('password1')
-            password2 = data.get('password2')
-            direccion = data.get('direccion')
-            telefono = data.get('telefono')
-            rol_nombre = data.get('rol')  # Asumiendo que se envía el nombre del rol
-        except json.JSONDecodeError:
-            return JsonResponse({'message': 'Formato JSON no válido'}, status=400)
-
-        # Verifica que todos los campos requeridos estén presentes
-        if not all([username, nombre, apellido, cedula, correo, password1, password2, direccion, telefono, rol_nombre]):
-            return JsonResponse({'message': 'Todos los campos son obligatorios'}, status=400)
-
-        # Verifica que el usuario no exista ya
-        if Usuario.objects.filter(username=username).exists():
-            return JsonResponse({'message': 'El nombre de usuario ya existe'}, status=400)
-
-        if Usuario.objects.filter(correo=correo).exists():
-            return JsonResponse({'message': 'El correo ya está registrado'}, status=400)
+            return Response({
+                'message': 'Login exitoso',
+                'user': {
+                    'username': user.username,
+                    'email': user.email,
+                    'cedula': user.cedula,
+                    'rol': user.rol.nombre,
+                },
+                'tokens': {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }
+            })
         
-        if Usuario.objects.filter(cedula=cedula).exists():
-            return JsonResponse({'message': 'La cédula ya está registrada'}, status=400)
-        
-        if password1 != password2:
-            return JsonResponse({'message': 'Las contraseñas no coinciden'}, status=400)
-        
-        password = password1  # Asigna password1 a password ya que ambas coinciden
+        return Response(
+            {'message': 'Credenciales inválidas'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
 
-        # Intenta obtener la instancia de Rol
+class SignUpView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
         try:
-            rol = Rol.objects.get(nombre=rol_nombre)
-        except Rol.DoesNotExist:
-            return JsonResponse({'message': 'Rol no válido'}, status=400)
+            username = request.data.get('username')
+            email = request.data.get('email')
+            first_name = request.data.get('first_name')
+            last_name = request.data.get('last_name')
+            cedula = request.data.get('cedula')
+            password1 = request.data.get('password1')
+            password2 = request.data.get('password2')
+            direccion = request.data.get('direccion')
+            telefono = request.data.get('telefono')
+            rol_nombre = request.data.get('rol')
 
-        # Hashea la contraseña
-        hashed_password = make_password(password)
+            # Verificaciones
+            if not all([username, email, first_name, last_name, cedula, 
+                       password1, password2, direccion, telefono, rol_nombre]):
+                return Response(
+                    {'message': 'Todos los campos son obligatorios'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-        # Crea el nuevo usuario
-        try:
+            # Verificar unicidad
+            if Usuario.objects.filter(username=username).exists():
+                return Response(
+                    {'message': 'El nombre de usuario ya existe'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if Usuario.objects.filter(email=email).exists():
+                return Response(
+                    {'message': 'El email ya está registrado'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if Usuario.objects.filter(cedula=cedula).exists():
+                return Response(
+                    {'message': 'La cédula ya está registrada'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if password1 != password2:
+                return Response(
+                    {'message': 'Las contraseñas no coinciden'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            try:
+                rol = Rol.objects.get(nombre=rol_nombre)
+            except Rol.DoesNotExist:
+                return Response(
+                    {'message': 'Rol no válido'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
             usuario = Usuario.objects.create(
                 username=username,
-                nombre=nombre,
-                apellido=apellido,
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
                 cedula=cedula,
-                correo=correo,
-                password=hashed_password,
+                password=make_password(password1),
                 direccion=direccion,
                 telefono=telefono,
-                rol=rol  # Asigna la instancia del rol
+                rol=rol
             )
-            usuario.save()
+
+            return Response({
+                'message': 'Usuario creado exitosamente',
+                'user': {
+                    'username': usuario.username,
+                    'email': usuario.email,
+                    'cedula': usuario.cedula,
+                    'rol': usuario.rol.nombre
+                }
+            }, status=status.HTTP_201_CREATED)
+
         except Exception as e:
-            return JsonResponse({'message': f'Error al crear el usuario: {str(e)}'}, status=500)
+            return Response(
+                {'message': f'Error al crear el usuario: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
-        return JsonResponse({'message': 'Usuario creado exitosamente'}, status=201)
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    return JsonResponse({'message': 'Método no permitido'}, status=405)
+    def post(self, request):
+        username = request.data.get('username')
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
 
-@csrf_exempt
-def ChangePasswordView(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)  # Analiza los datos JSON
-            username = data.get('username')
-            current_password = data.get('current_password')
-            new_password = data.get('new_password')
-        except json.JSONDecodeError:
-            return JsonResponse({'message': 'Formato JSON no válido'}, status=400)
-
-        # Verifica que todos los campos requeridos estén presentes
         if not all([username, current_password, new_password]):
-            return JsonResponse({'message': 'Todos los campos son obligatorios'}, status=400)
+            return Response(
+                {'message': 'Todos los campos son obligatorios'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
-            # Busca al usuario en la base de datos
             user = Usuario.objects.get(username=username)
         except Usuario.DoesNotExist:
-            return JsonResponse({'message': 'Usuario no encontrado'}, status=404)
+            return Response(
+                {'message': 'Usuario no encontrado'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-        # Verifica la contraseña actual
         if not check_password(current_password, user.password):
-            return JsonResponse({'message': 'La contraseña actual es incorrecta'}, status=401)
+            return Response(
+                {'message': 'La contraseña actual es incorrecta'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
-        # Verifica que la nueva contraseña sea diferente de la actual
         if current_password == new_password:
-            return JsonResponse({'message': 'La nueva contraseña no puede ser igual a la actual'}, status=400)
+            return Response(
+                {'message': 'La nueva contraseña no puede ser igual a la actual'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        # Realiza el hashing de la nueva contraseña
-        hashed_password = make_password(new_password)
-
-        # Actualiza la contraseña del usuario
-        user.password = hashed_password
+        user.password = make_password(new_password)
         user.save()
 
-        return JsonResponse({'message': 'Contraseña actualizada exitosamente'}, status=200)
+        return Response(
+            {'message': 'Contraseña actualizada exitosamente'},
+            status=status.HTTP_200_OK
+        )
 
-    return JsonResponse({'message': 'Método no permitido'}, status=405)
-
-    
 class AdminView(APIView):
-    """Vista que solo puede ser accedida por usuarios con rol admin."""
-    permission_classes = [IsAuthenticated, IsAdmin]
-
+    permission_classes = [IsAuthenticated]
+    
     def get(self, request):
-        return Response({"message": "Bienvenido, administrador"})
-    
-    def post(self, request):
-        return Response({"message": "Bienvenido, administrador"})
-    
-    def put(self, request): 
-        return Response({"message": "Bienvenido, administrador"})
-    
-    def delete(self, request): 
-        return Response({"message": "Bienvenido, administrador"})
+        if request.user.rol.nombre != 'Admin':
+            return Response(
+                {'message': 'No tienes permisos de administrador'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return Response({'message': 'Bienvenido, Admin'})
 
 class CompradorView(APIView):
-    """Vista que solo puede ser accedida por usuarios con rol comprador."""
-    permission_classes = [IsAuthenticated, IsComprador]
-
+    permission_classes = [IsAuthenticated]
+    
     def get(self, request):
-        return Response({"message": "Bienvenido, comprador"})
-    
-    def post(self, request):
-        return Response({"message": "Bienvenido, comprador"})
-    
-    def put(self, request): 
-        return Response({"message": "Bienvenido, comprador"})
-    
-    def delete(self, request): 
-        return Response({"message": "Bienvenido, comprador"})
-
-class VendedorView(APIView):
-    """Vista que solo puede ser accedida por usuarios con rol vendedor."""
-    permission_classes = [IsAuthenticated, IsVendedor]
-
-    def get(self, request):
-        return Response({"message": "Bienvenido, vendedor"})
-    
-    def post(self, request):
-        return Response({"message": "Bienvenido, vendedor"})
-    
-    def put(self, request): 
-        return Response({"message": "Bienvenido, vendedor"})
-    
-    def delete(self, request): 
-        return Response({"message": "Bienvenido, vendedor"})
+        if request.user.rol.nombre != 'Comprador':
+            return Response(
+                {'message': 'No tienes permisos de comprador'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return Response({'message': 'Bienvenido, Comprador'})

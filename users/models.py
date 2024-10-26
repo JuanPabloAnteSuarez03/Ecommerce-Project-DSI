@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.contrib.auth.models import AbstractUser
 
 class Rol(models.Model):
     nombre = models.CharField(max_length=50)
@@ -10,19 +11,15 @@ class Rol(models.Model):
     def __str__(self):
         return self.nombre
 
-class Usuario(models.Model):
-    username = models.CharField(max_length=50, unique=True, default="username")
-    nombre = models.CharField(max_length=50)
-    apellido = models.CharField(max_length=50)
+class Usuario(AbstractUser):
     cedula = models.CharField(max_length=10, unique=True)
-    correo = models.EmailField(unique=True)
-    password = models.CharField(max_length=255)
     direccion = models.CharField(max_length=255)
     telefono = models.CharField(max_length=20)
     rol = models.ForeignKey(Rol, on_delete=models.CASCADE)
-
+    
+    # Sobrescribe el método __str__
     def __str__(self):
-        return f"{self.nombre} {self.apellido} - {self.correo}"
+        return f"{self.username} - {self.rol.nombre}"
 
 class MetodoPago(models.Model):
     tipo_pago = models.CharField(max_length=50)
