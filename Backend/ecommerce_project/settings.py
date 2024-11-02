@@ -41,7 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'coreapi',
     'users',
+    'products',
 ]
 
 MIDDLEWARE = [
@@ -145,6 +147,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
 
 SIMPLE_JWT = {
@@ -156,3 +160,7 @@ SIMPLE_JWT = {
 
 
 AUTH_USER_MODEL = 'users.Usuario'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+

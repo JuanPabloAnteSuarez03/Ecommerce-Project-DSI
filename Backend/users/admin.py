@@ -5,8 +5,6 @@ from .models import *
 admin.site.register(Rol)
 admin.site.register(Usuario)
 admin.site.register(MetodoPago)
-admin.site.register(Categoria)
-admin.site.register(Producto)
 admin.site.register(Carrito)
 admin.site.register(Contiene)
 admin.site.register(Pedido)
