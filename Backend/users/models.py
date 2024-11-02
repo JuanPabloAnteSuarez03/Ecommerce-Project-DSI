@@ -1,8 +1,5 @@
-from django.contrib.auth.models import User
-from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 class Rol(models.Model):
     nombre = models.CharField(max_length=50)
@@ -17,7 +14,6 @@ class Usuario(AbstractUser):
     telefono = models.CharField(max_length=20)
     rol = models.ForeignKey(Rol, on_delete=models.CASCADE)
     
-    # Sobrescribe el método __str__
     def __str__(self):
         return f"{self.username} - {self.rol.nombre}"
 
@@ -27,34 +23,16 @@ class MetodoPago(models.Model):
     def __str__(self):
         return self.tipo_pago
 
-class Categoria(models.Model):
-    nombre_categoria = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.nombre_categoria
-
-class Producto(models.Model):
-    nombre_producto = models.CharField(max_length=100)
-    descripcion = models.TextField()
-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
-    precio = models.DecimalField(max_digits=10, decimal_places=2)
-    stock = models.IntegerField()
-    vendedor = models.ForeignKey(Usuario, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"{self.nombre_producto} - {self.categoria.nombre_categoria}"
-
-
 class Carrito(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     fecha_creacion = models.DateField()
 
     def __str__(self):
-        return f"Carrito de {self.usuario.nombre} - {self.fecha_creacion}"
+        return f"Carrito de {self.usuario.username} - {self.fecha_creacion}"
 
 class Contiene(models.Model):
     carrito = models.ForeignKey(Carrito, on_delete=models.CASCADE)
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    producto = models.ForeignKey('products.Producto', on_delete=models.CASCADE)  # Cambiado para evitar el import circular
     cantidad = models.IntegerField()
 
     def __str__(self):
@@ -68,11 +46,11 @@ class Pedido(models.Model):
 
     def __str__(self):
         estado_str = "Completado" if self.estado else "Pendiente"
-        return f"Pedido de {self.usuario.nombre} - {estado_str} - {self.fecha_pedido}"
+        return f"Pedido de {self.usuario.username} - {estado_str} - {self.fecha_pedido}"
 
 class Incluye(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    producto = models.ForeignKey('products.Producto', on_delete=models.CASCADE)  # Cambiado para evitar el import circular
     cantidad = models.IntegerField()
 
     def __str__(self):
@@ -97,4 +75,4 @@ class Factura(models.Model):
     total_final = models.FloatField()
 
     def __str__(self):
-        return f"Factura {self.numero_factura} - Cliente: {self.cliente.nombre}"
+        return f"Factura {self.numero_factura} - Cliente: {self.cliente.username}"
