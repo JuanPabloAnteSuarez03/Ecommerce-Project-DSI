@@ -18,11 +18,10 @@ class CarritoItemSerializer(serializers.ModelSerializer):
 
 class CarritoSerializer(serializers.ModelSerializer):
     items = CarritoItemSerializer(many=True, read_only=True)
-    total = serializers.SerializerMethodField()
 
     class Meta:
         model = Carrito
-        fields = ['id', 'fecha_creacion', 'items', 'total']
+        fields = ['id', 'usuario', 'fecha_creacion', 'items']
 
     def get_total(self, obj):
         return sum(item.subtotal for item in obj.items.all())

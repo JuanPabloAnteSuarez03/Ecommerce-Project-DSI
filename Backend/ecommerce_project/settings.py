@@ -75,7 +75,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'shopping.context_processor.total_car_amount'
             ],
         },
     },
@@ -92,7 +91,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Ecommerce_Project',
         'USER': 'postgres',
-        'PASSWORD': '3167178829Juan',
+        'PASSWORD': '123Randy',
         'HOST': 'localhost',  # o el host de tu servidor de PostgreSQL
         'PORT': '5432',       # el puerto predeterminado de PostgreSQL
     }

@@ -7,7 +7,7 @@ from products.models import Producto
 
 class Carrito(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
-    fecha_creacion = models.DateField(auto_now_add=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         return f"Carrito de {self.usuario.username} - {self.fecha_creacion}"

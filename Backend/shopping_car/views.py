@@ -1,11 +1,13 @@
 # views.py
 from django.utils import timezone
+from django.contrib.auth.models import User
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .models import Carrito, CarritoItem
+#from ..users.models import Usuario
 from products.models import Producto
 from .serializers import CarritoSerializer, CarritoItemSerializer
 
@@ -13,10 +15,14 @@ class CartViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = CarritoSerializer
 
+
     def get_queryset(self):
         return Carrito.objects.filter(usuario=self.request.user)
 
     def get_or_create_cart(self):
+        #usuario = User.objects.values()
+        #print(usuario[0])
+
         carrito, created = Carrito.objects.get_or_create(
             usuario=self.request.user,
             defaults={'fecha_creacion': timezone.now()}
@@ -59,6 +65,7 @@ class CartViewSet(viewsets.ModelViewSet):
             item = CarritoItem.objects.get(
                 carrito=carrito,
                 producto_id=product_id
+                
             )
             item.delete()
             serializer = CarritoSerializer(carrito)
@@ -69,7 +76,7 @@ class CartViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-    # cantidad de actualización, osea si el producto de carrito < 0 se eliminara del carrito
+    # cantidad de actualización, restando el producto
     @action(detail=False, methods=['POST'])
     def update_quantity(self, request):
         carrito = self.get_or_create_cart()
@@ -98,7 +105,17 @@ class CartViewSet(viewsets.ModelViewSet):
     # Limpiar carrito
     @action(detail=False, methods=['POST'])
     def clear(self, request):
-        carrito = self.get_or_create_cart()
-        CarritoItem.objects.filter(carrito=carrito).delete()
-        serializer = CarritoSerializer(carrito)
-        return Response(serializer.data)
+        try:
+            carrito = self.get_or_create_cart()
+            print(f"Carrito encontrado: {carrito.id}")  
+            items = CarritoItem.objects.filter(carrito=carrito)
+            print(f"Items a eliminar: {items.count()}")  
+            items.delete()
+            serializer = CarritoSerializer(carrito)
+            return Response(serializer.data)
+        except Exception as e:
+            print(f"Error: {str(e)}")  
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
