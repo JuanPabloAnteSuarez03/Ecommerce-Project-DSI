@@ -1,52 +1,104 @@
-from django.shortcuts import render
-from .car import Car
-from users.models import Producto
-from django.shortcuts import redirect
+# views.py
+from django.utils import timezone
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+from .models import Carrito, CarritoItem
+from products.models import Producto
+from .serializers import CarritoSerializer, CarritoItemSerializer
 
-# Create your views here.
+class CartViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CarritoSerializer
 
-# Agreagar producto
-def add_product(request, product_id):
+    def get_queryset(self):
+        return Carrito.objects.filter(usuario=self.request.user)
 
-    car = Car(request)
+    def get_or_create_cart(self):
+        carrito, created = Carrito.objects.get_or_create(
+            usuario=self.request.user,
+            defaults={'fecha_creacion': timezone.now()}
+        )
+        return carrito
 
-    product = Producto.objects.get(id = product_id)
+    # Agregar producto al carrito
+    @action(detail=False, methods=['POST'])
+    def add_item(self, request):
+        carrito = self.get_or_create_cart()
+        product_id = request.data.get('product_id')
+        cantidad = int(request.data.get('cantidad', 1))
 
-    car.add(product = product)
+        try:
+            producto = Producto.objects.get(id=product_id)
+            item, created = CarritoItem.objects.get_or_create(
+                carrito=carrito,
+                producto=producto,
+                defaults={'cantidad': cantidad}
+            )
+            if not created:
+                item.cantidad += cantidad
+                item.save()
+            
+            serializer = CarritoSerializer(carrito)
+            return Response(serializer.data)
+        except Producto.DoesNotExist:
+            return Response(
+                {'error': 'Producto no encontrado'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-    #Redirecionar a la tienda
-    return redirect("Tienda") 
+    # Remover producto al carrito
+    @action(detail=False, methods=['POST'])
+    def remove_item(self, request):
+        carrito = self.get_or_create_cart()
+        product_id = request.data.get('product_id')
+        
+        try:
+            item = CarritoItem.objects.get(
+                carrito=carrito,
+                producto_id=product_id
+            )
+            item.delete()
+            serializer = CarritoSerializer(carrito)
+            return Response(serializer.data)
+        except CarritoItem.DoesNotExist:
+            return Response(
+                {'error': 'Producto no encontrado en el carrito'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-# Eliminar Producto
-def delete_product(request, product_id):
+    # cantidad de actualización, osea si el producto de carrito < 0 se eliminara del carrito
+    @action(detail=False, methods=['POST'])
+    def update_quantity(self, request):
+        carrito = self.get_or_create_cart()
+        product_id = request.data.get('product_id')
+        cantidad = int(request.data.get('cantidad', 1))
 
-    car = Car(request)
+        try:
+            item = CarritoItem.objects.get(
+                carrito=carrito,
+                producto_id=product_id
+            )
+            if cantidad > 0:
+                item.cantidad = cantidad
+                item.save()
+            else:
+                item.delete()
+            
+            serializer = CarritoSerializer(carrito)
+            return Response(serializer.data)
+        except CarritoItem.DoesNotExist:
+            return Response(
+                {'error': 'Producto no encontrado en el carrito'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-    product = Producto.objects.get(id = product_id)
-
-    car.delete(product = product)
-
-    #Redirecionar a la tienda
-    return redirect("Tienda") 
-
-#Restar Producto
-def subtract_product(request, product_id):
-
-    car = Car(request)
-
-    product = Producto.objects.get(id = product_id)
-
-    car.subtract(product = product)
-
-    #Redirecionar a la tienda
-    return redirect("Tienda") 
-
-# Limpiar Carro
-def clean_car(request, product_id):
-
-    car = Car(request)
-
-    car.clean_car()
-
-    #Redirecionar a la tienda
-    return redirect("Tienda") 
+    # Limpiar carrito
+    @action(detail=False, methods=['POST'])
+    def clear(self, request):
+        carrito = self.get_or_create_cart()
+        CarritoItem.objects.filter(carrito=carrito).delete()
+        serializer = CarritoSerializer(carrito)
+        return Response(serializer.data)

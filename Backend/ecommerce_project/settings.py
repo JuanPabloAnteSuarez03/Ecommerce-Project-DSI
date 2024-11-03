@@ -43,12 +43,14 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'coreapi',
     'users',
-    'shopping_car',
     'products',
+    'corsheaders',
+    'shopping_car',
 
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -57,6 +59,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True  # Solo para desarrollo
 
 ROOT_URLCONF = 'ecommerce_project.urls'
 
@@ -91,9 +95,6 @@ DATABASES = {
         'PASSWORD': '3167178829Juan',
         'HOST': 'localhost',  # o el host de tu servidor de PostgreSQL
         'PORT': '5432',       # el puerto predeterminado de PostgreSQL
-        'OPTIONS': {
-            'client_encoding': 'UTF8',
-        },
     }
 }
 

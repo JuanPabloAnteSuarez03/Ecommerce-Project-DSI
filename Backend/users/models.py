@@ -23,20 +23,7 @@ class MetodoPago(models.Model):
     def __str__(self):
         return self.tipo_pago
 
-class Carrito(models.Model):
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
-    fecha_creacion = models.DateField()
 
-    def __str__(self):
-        return f"Carrito de {self.usuario.username} - {self.fecha_creacion}"
-
-class Contiene(models.Model):
-    carrito = models.ForeignKey(Carrito, on_delete=models.CASCADE)
-    producto = models.ForeignKey('products.Producto', on_delete=models.CASCADE)  # Cambiado para evitar el import circular
-    cantidad = models.IntegerField()
-
-    def __str__(self):
-        return f"{self.cantidad} x {self.producto.nombre_producto} en {self.carrito}"
 
 class Pedido(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
