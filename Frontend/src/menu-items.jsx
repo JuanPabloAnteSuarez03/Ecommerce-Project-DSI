@@ -20,6 +20,13 @@ const menuItems = {
           icon: 'feather icon-home',
           url: '/carrito'
         },
+        {
+          id: 'producto',
+          title: 'productos',
+          type: 'item',
+          icon: 'feather icon-home',
+          url: '/productos'
+        },
       ]
     },
     {
