@@ -87,21 +87,13 @@ const menuItems = {
       type: 'group',
       icon: 'icon-pages',
       children: [
+        
         {
-          id: 'sign in',
+          id: 'login',
           title: 'Login',
           type: 'item',
-          icon: 'feather icon-lock',
-          url: '/auth/signin-1',
-          target: true,
-          breadcrumbs: false
-        },
-        {
-          id: 'sign Up',
-          title: 'Register',
-          type: 'item',
           icon: 'feather icon-log-in',
-          url: '/auth/signup-1',
+          url: '/auth/login-1',
           target: true,
           breadcrumbs: false
         },
