@@ -64,6 +64,11 @@ export const routes = [
         path: '/carrito',
         element: lazy(() => import('./views/carrito/carrito'))
       },
+      {
+        exact: 'true',
+        path: '/productos',
+        element: lazy(() => import('./views/productos/productos'))
+      },
       
       {
         exact: 'true',
