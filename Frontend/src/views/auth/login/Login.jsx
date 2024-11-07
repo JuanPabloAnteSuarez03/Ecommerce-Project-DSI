@@ -15,7 +15,7 @@ const saveUsers = (users) => {
   localStorage.setItem("users", JSON.stringify(users));
 };
 
-const SignUp1 = () => {
+const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");  // Estado para email
@@ -131,4 +131,4 @@ const SignUp1 = () => {
   );
 };
 
-export default SignUp1;
+export default Login;
