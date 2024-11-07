@@ -69,7 +69,6 @@ export const routes = [
         path: '/productos',
         element: lazy(() => import('./views/productos/productos'))
       },
-      
       {
         exact: 'true',
         path: '/basic/button',

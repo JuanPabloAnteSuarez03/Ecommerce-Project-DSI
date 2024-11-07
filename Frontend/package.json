@@ -23,6 +23,7 @@
     "react-icons": "^5.0.1",
     "react-perfect-scrollbar": "^1.5.8",
     "react-router-dom": "^6.23.0",
+    "vite": "^5.2.11",
     "vite-jsconfig-paths": "^2.0.1",
     "web-vitals": "^3.5.2",
     "yup": "^1.4.0"
@@ -68,12 +69,7 @@
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "prettier": "3.2.5",
-    "sass": "^1.75.0",
-    "vite": "^5.4.10"
+    "sass": "^1.75.0"
   },
-  "packageManager": "yarn@4.1.1",
-  "description": "[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Price](https://img.shields.io/badge/price-FREE-0098f7.svg)](https://github.com/codedthemes/gradient-able-free-admin-template/blob/main/react/LICENSE)",
-  "main": "index.js",
-  "author": "",
-  "license": "ISC"
+  "packageManager": "yarn@4.1.1"
 }
