@@ -2,6 +2,9 @@
 from rest_framework import viewsets
 from .models import Producto, Categoria
 from .serializer import ProductSerializer, CategorySerializer
+from users.permissions import IsStaffUser
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import DjangoModelPermissions
 
 class CategoriaView(viewsets.ModelViewSet):
     """
@@ -18,6 +21,7 @@ class CategoriaView(viewsets.ModelViewSet):
     delete:
         Elimina una categoría.
     """
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
     queryset = Categoria.objects.all()
     serializer_class = CategorySerializer
 
@@ -36,5 +40,6 @@ class ProductoView(viewsets.ModelViewSet):
     delete:
         Elimina un producto.
     """
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
     queryset = Producto.objects.all()
     serializer_class = ProductSerializer

@@ -8,10 +8,14 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password, make_password
 from .models import Usuario, Rol
 from .serializers import UsuarioSerializer
+from .mixins import StaffRequiredMixin
+from .permissions import IsStaffUser
+from django.contrib.auth.models import Group
+
 
 
 class LoginView(APIView):
-    permission_classes = [AllowAny]  # No requiere token
+    permission_classes = [AllowAny]
 
     def post(self, request):
         username = request.data.get('username')
@@ -69,10 +73,11 @@ class SignUpView(APIView):
             direccion = request.data.get('direccion')
             telefono = request.data.get('telefono')
             rol_nombre = request.data.get('rol')
+            groups_ids = request.data.get('groups', [])
 
             # Verificaciones
-            if not all([username, email, first_name, last_name, cedula, 
-                       password1, password2, direccion, telefono, rol_nombre]):
+            if not all([username, email, first_name, last_name, cedula,
+                        password1, password2, direccion, telefono, rol_nombre]):
                 return Response(
                     {'message': 'Todos los campos son obligatorios'},
                     status=status.HTTP_400_BAD_REQUEST
@@ -103,6 +108,7 @@ class SignUpView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
+            # Obtener el rol
             try:
                 rol = Rol.objects.get(nombre=rol_nombre)
             except Rol.DoesNotExist:
@@ -111,6 +117,7 @@ class SignUpView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
+            # Crear el usuario
             usuario = Usuario.objects.create(
                 username=username,
                 email=email,
@@ -123,13 +130,29 @@ class SignUpView(APIView):
                 rol=rol
             )
 
+            # Asignar grupos
+            if groups_ids:
+                try:
+                    groups = Group.objects.filter(id__in=groups_ids)
+                    usuario.groups.set(groups)
+                except Group.DoesNotExist:
+                    return Response(
+                        {'message': 'Uno o más grupos no existen'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+            # Obtener permisos asociados a los grupos del usuario
+            permisos = usuario.get_group_permissions()
+
             return Response({
                 'message': 'Usuario creado exitosamente',
                 'user': {
                     'username': usuario.username,
                     'email': usuario.email,
                     'cedula': usuario.cedula,
-                    'rol': usuario.rol.nombre
+                    'rol': usuario.rol.nombre,
+                    'groups': [group.name for group in usuario.groups.all()],
+                    'permissions': list(permisos)
                 }
             }, status=status.HTTP_201_CREATED)
 
@@ -138,6 +161,8 @@ class SignUpView(APIView):
                 {'message': f'Error al crear el usuario: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
 
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
@@ -182,23 +207,27 @@ class ChangePasswordView(APIView):
         )
 
 class AdminView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStaffUser]
     
     def get(self, request):
-        if request.user.rol.nombre != 'Admin':
-            return Response(
-                {'message': 'No tienes permisos de administrador'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        return Response({'message': 'Bienvenido, Admin'})
+        return Response({
+            'message': 'Bienvenido, Admin',
+            'user': {
+                'username': request.user.username,
+                'email': request.user.email,
+                'is_staff': request.user.is_staff
+            }
+        })
 
 class CompradorView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        if request.user.rol.nombre != 'Comprador':
-            return Response(
-                {'message': 'No tienes permisos de comprador'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        return Response({'message': 'Bienvenido, Comprador'})
+        return Response({
+            'message': 'Bienvenido, Comprador',
+            'user': {
+                'username': request.user.username,
+                'email': request.user.email,
+                'is_staff': request.user.is_staff
+            }
+        })
