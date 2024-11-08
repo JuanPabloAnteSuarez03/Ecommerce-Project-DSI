@@ -22,11 +22,25 @@ const menuItems = {
         },
         {
           id: 'producto',
-          title: 'productos',
+          title: 'Productos',
           type: 'item',
           icon: 'feather icon-home',
           url: '/productos'
-        },
+        }, 
+        {
+          id: 'usuario',
+          title: 'Usuario',
+          type: 'item',
+          icon: 'feather icon-home',
+          url: '/usuario'
+        }, 
+        {
+          id: 'ingreso',
+          title: 'Ingreso',
+          type: 'item',
+          icon: 'feather icon-home',
+          url: '/ingreso'
+        }
       ]
     },
     {
