@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -67,7 +71,7 @@ ROOT_URLCONF = 'ecommerce_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'users', 'templates')],  # Añade esta línea
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -169,4 +173,12 @@ AUTH_USER_MODEL = 'users.Usuario'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Servidor de correo
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'ecommerceprojectds1@gmail.com'
+EMAIL_HOST_PASSWORD = 'tvqexgfnozvgpxju'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
