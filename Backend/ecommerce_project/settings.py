@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'products',
     'corsheaders',
     'shopping_car',
+    'orders',
 
 ]
 

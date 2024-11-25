@@ -1,15 +1,14 @@
 # products/urls.py
 from django.urls import path, include
 from rest_framework import routers
-from rest_framework.documentation import include_docs_urls
 from rest_framework.permissions import AllowAny
 from . import views
 
 router = routers.DefaultRouter()
-router.register(r'categorias', views.CategoriaView, basename='categoria')
-router.register(r'productos', views.ProductoView, basename='producto')
+router.register(r'pedidos', views.PedidoView, basename='pedidos')
+router.register(r'detallePedidos', views.DetallePedidoView, basename='detallePedidos')
+router.register(r'facturas', views.FacturaView, basename='facturas')
 
 urlpatterns = [ 
     path('api/', include(router.urls)),
-
 ]
