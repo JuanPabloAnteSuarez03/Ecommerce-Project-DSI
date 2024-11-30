@@ -22,13 +22,52 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 
 
 
 
 class LoginView(APIView):
+    """
+    Vista para autenticar usuarios y generar tokens de acceso.
+    """
     permission_classes = [AllowAny]
 
+    @swagger_auto_schema(
+        operation_description="Autenticar un usuario con su username y password.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Nombre de usuario'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='Contraseña'),
+            },
+            required=['username', 'password'],
+        ),
+        responses={
+            200: openapi.Response(
+                description="Login exitoso",
+                examples={
+                    "application/json": {
+                        "message": "Login exitoso",
+                        "user": {
+                            "username": "john_doe",
+                            "email": "john@example.com",
+                            "cedula": "123456789",
+                            "rol": "admin"
+                        },
+                        "tokens": {
+                            "refresh": "ey...",
+                            "access": "ey..."
+                        }
+                    }
+                },
+            ),
+            400: "Se requieren username y password.",
+            401: "Credenciales inválidas o cuenta no activada.",
+        }
+    )
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
@@ -78,7 +117,41 @@ class LoginView(APIView):
         )
 
 class SignUpView(APIView):
+    """
+    Vista para registrar nuevos usuarios.
+    """
     permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Registrar un nuevo usuario en el sistema.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Nombre de usuario'),
+                'email': openapi.Schema(type=openapi.TYPE_STRING, description='Correo electrónico'),
+                'first_name': openapi.Schema(type=openapi.TYPE_STRING, description='Nombre'),
+                'last_name': openapi.Schema(type=openapi.TYPE_STRING, description='Apellido'),
+                'cedula': openapi.Schema(type=openapi.TYPE_STRING, description='Cédula del usuario'),
+                'password1': openapi.Schema(type=openapi.TYPE_STRING, description='Contraseña'),
+                'password2': openapi.Schema(type=openapi.TYPE_STRING, description='Confirmación de la contraseña'),
+                'direccion': openapi.Schema(type=openapi.TYPE_STRING, description='Dirección del usuario'),
+                'telefono': openapi.Schema(type=openapi.TYPE_STRING, description='Teléfono del usuario'),
+                'rol': openapi.Schema(type=openapi.TYPE_STRING, description='Rol del usuario'),
+                'groups': openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(type=openapi.TYPE_INTEGER),
+                    description='Lista de IDs de los grupos del usuario',
+                ),
+            },
+            required=['username', 'email', 'first_name', 'last_name', 'cedula', 'password1', 'password2', 'direccion', 'telefono', 'rol'],
+        ),
+        responses={
+            201: "Usuario creado exitosamente. Revisa tu correo para confirmar tu cuenta.",
+            400: "Error en los datos enviados (por ejemplo, contraseñas no coinciden).",
+            500: "Error al enviar el correo de confirmación.",
+        }
+    )
+
 
     def post(self, request):
         try:
@@ -207,7 +280,29 @@ class SignUpView(APIView):
 
 
 class ChangePasswordView(APIView):
+    """
+    Vista para cambiar la contraseña de un usuario autenticado.
+    """
     permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Cambiar la contraseña del usuario autenticado.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Nombre de usuario'),
+                'current_password': openapi.Schema(type=openapi.TYPE_STRING, description='Contraseña actual'),
+                'new_password': openapi.Schema(type=openapi.TYPE_STRING, description='Nueva contraseña'),
+            },
+            required=['username', 'current_password', 'new_password'],
+        ),
+        responses={
+            200: "Contraseña actualizada exitosamente.",
+            400: "Datos inválidos (por ejemplo, nueva contraseña igual a la actual).",
+            401: "Contraseña actual incorrecta.",
+            404: "Usuario no encontrado.",
+        }
+    )
 
     def post(self, request):
         username = request.data.get('username')
@@ -249,7 +344,30 @@ class ChangePasswordView(APIView):
         )
 
 class AdminView(APIView):
+    """
+    Vista exclusiva para usuarios con permisos de administrador.
+    """
     permission_classes = [IsAuthenticated, IsStaffUser]
+
+    @swagger_auto_schema(
+        operation_description="Obtener datos del usuario administrador.",
+        responses={
+            200: openapi.Response(
+                description="Datos del administrador",
+                examples={
+                    "application/json": {
+                        "message": "Bienvenido, Admin",
+                        "user": {
+                            "username": "admin_user",
+                            "email": "admin@example.com",
+                            "is_staff": True
+                        }
+                    }
+                },
+            )
+        }
+    )
+
     
     def get(self, request):
         return Response({
@@ -262,7 +380,30 @@ class AdminView(APIView):
         })
 
 class CompradorView(APIView):
+    """
+    Vista exclusiva para compradores autenticados.
+    """
     permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Obtener datos del usuario comprador.",
+        responses={
+            200: openapi.Response(
+                description="Datos del comprador",
+                examples={
+                    "application/json": {
+                        "message": "Bienvenido, Comprador",
+                        "user": {
+                            "username": "buyer_user",
+                            "email": "buyer@example.com",
+                            "is_staff": False
+                        }
+                    }
+                },
+            )
+        }
+    )
+
     
     def get(self, request):
         return Response({
@@ -275,7 +416,27 @@ class CompradorView(APIView):
         })
     
 class EmailAPIView(APIView):
+    """
+    Vista para enviar un correo electrónico.
+    """
     permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Enviar un correo con un asunto y mensaje.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'subject': openapi.Schema(type=openapi.TYPE_STRING, description='Asunto del correo'),
+                'message': openapi.Schema(type=openapi.TYPE_STRING, description='Cuerpo del correo'),
+                'to_email': openapi.Schema(type=openapi.TYPE_STRING, description='Correo del destinatario'),
+            },
+            required=['subject', 'message', 'to_email'],
+        ),
+        responses={
+            200: "Correo enviado exitosamente.",
+            400: "Faltan campos obligatorios.",
+        }
+    )
 
     def post(self, request):
         subject = request.data.get('subject')
@@ -302,8 +463,22 @@ class EmailAPIView(APIView):
         )
     
 class activate(APIView):
+    """
+    Activar la cuenta de usuario mediante un enlace de confirmación.
+    """
     permission_classes = [AllowAny]
-    
+
+    @swagger_auto_schema(
+        operation_description="Activar la cuenta del usuario con el token de confirmación.",
+        manual_parameters=[
+            openapi.Parameter('uidb64', openapi.IN_PATH, description="ID codificado del usuario", type=openapi.TYPE_STRING),
+            openapi.Parameter('token', openapi.IN_PATH, description="Token de activación", type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: "Cuenta activada exitosamente.",
+            400: "El enlace de activación es inválido.",
+        }
+    )
     def get(self, request, uidb64, token):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))

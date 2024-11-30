@@ -11,9 +11,5 @@ router.register(r'productos', views.ProductoView, basename='producto')
 
 urlpatterns = [ 
     path('api/', include(router.urls)),
-    path('docs/', include_docs_urls(
-        title='Products API',
-        public=True,
-        permission_classes=[AllowAny]
-    ))
+
 ]

@@ -46,10 +46,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'coreapi',
+    'corsheaders',
+    'drf_yasg',
     'users',
     'products',
-    'corsheaders',
     'shopping_car',
+    'orders',
 
 ]
 

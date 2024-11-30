@@ -1,2 +1,4 @@
 __pycache__/
 carrito_env/
+.venv
+media/
