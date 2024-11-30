@@ -12,7 +12,7 @@ class CategorySerializer(serializers.ModelSerializer):
         help_text="Nombre de la categoría"
     )
 
-class ProductSerializer(serializers.ModelSerializer):
+class ProductoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Producto
         fields = '__all__'

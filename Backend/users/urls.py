@@ -3,6 +3,7 @@ from .views import AdminView, CompradorView, LoginView, SignUpView, ChangePasswo
 from django.contrib.auth import views
 from . import views
 
+
 urlpatterns = [
     path('admin/', AdminView.as_view(), name='admin_view'),
     path('comprador/', CompradorView.as_view(), name='comprador_view'),
