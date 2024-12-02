@@ -1,3 +1,4 @@
+./Backend/.env
 __pycache__/
 carrito_env/
 .venv
