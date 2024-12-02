@@ -99,7 +99,7 @@ DATABASES = {
         'USER': os.environ.get("USER", ""),
         'PASSWORD': os.environ.get("PASSWORD", ""),
         'HOST': os.environ.get("HOST", ""),  # o el host de tu servidor de PostgreSQL
-        'PORT': os.environ.get("PORT", "5432")      # el puerto predeterminado de PostgreSQL
+        'PORT': os.environ.get("DATABASE_PORT", "5432")      # el puerto predeterminado de PostgreSQL
     }
 }
 
