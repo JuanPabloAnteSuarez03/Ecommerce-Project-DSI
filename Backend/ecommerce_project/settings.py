@@ -14,6 +14,10 @@ from pathlib import Path
 from datetime import timedelta
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -95,11 +99,14 @@ WSGI_APPLICATION = 'ecommerce_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get("NAME", ""),
-        'USER': os.environ.get("USER", ""),
+        'NAME': os.environ.get("DB_NAME", ""),
+        'USER': os.environ.get("DB_USER", ""),
         'PASSWORD': os.environ.get("PASSWORD", ""),
         'HOST': os.environ.get("DATABASE_HOST", ""),  # o el host de tu servidor de PostgreSQL
-        'PORT': os.environ.get("DATABASE_PORT", "5432")      # el puerto predeterminado de PostgreSQL
+        'PORT': os.environ.get("DATABASE_PORT", "5432"),      # el puerto predeterminado de PostgreSQL
+        'OPTIONS': {
+            'sslmode': 'require',  # Obliga el uso de SSL
+        },
     }
 }
 
