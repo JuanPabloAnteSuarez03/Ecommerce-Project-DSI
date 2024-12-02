@@ -95,15 +95,13 @@ WSGI_APPLICATION = 'ecommerce_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Ecommerce_Project',
-        'USER': 'postgres',
-        'PASSWORD': '123Randy',
-        'HOST': 'localhost',  # o el host de tu servidor de PostgreSQL
-        'PORT': '5432',       # el puerto predeterminado de PostgreSQL
+        'NAME': os.environ.get("NAME", ""),
+        'USER': os.environ.get("USER", ""),
+        'PASSWORD': os.environ.get("PASSWORD", ""),
+        'HOST': os.environ.get("HOST", ""),  # o el host de tu servidor de PostgreSQL
+        'PORT': os.environ.get("PORT", "5432")      # el puerto predeterminado de PostgreSQL
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
