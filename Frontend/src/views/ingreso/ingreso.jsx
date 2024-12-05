@@ -1,10 +1,28 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Card, Button, Form, Col, Row } from 'react-bootstrap';
 import { FaBox, FaDollarSign, FaCalendarAlt, FaIndustry, FaPen } from 'react-icons/fa';
-import { BsArrowRight, BsArrowLeft } from 'react-icons/bs';
+import { BsArrowRight, BsArrowLeft } from 'react-icons/bs'; 
+
+import axiosInstance from '../../utils/axios';
+
+
 
 function IngresoProducto() {
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axiosInstance.get('/products/api');
+        setCategories(response.data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     productName: '',
@@ -177,9 +195,24 @@ function IngresoProducto() {
     }
   };
 
-  // Handle submit the product data
-  const handleSubmit = () => {
-    alert('Producto ingresado con éxito');
+  const handleSubmit = async () => {
+    const productData = new FormData();
+    productData.append('nombre_producto', formData.productName);
+    productData.append('descripcion', formData.productDescription);
+    productData.append('precio', formData.sellingPrice);
+    productData.append('stock', formData.quantity);
+    productData.append('categoria', formData.category); // Use category ID
+    productData.append('imagen', formData.productImage); // Handle file upload
+    productData.append('vendedor', '1'); // Replace with the actual seller ID
+  
+    try {
+      const response = await axiosInstance.post('/products/api/productos/', productData);
+      alert('Producto ingresado con éxito:', response.data);
+    } catch (error) {
+      console.error('Error al ingresar el producto:', error);
+      alert('Error al ingresar el producto');
+    }
+  
     console.log(formData);
     setStep(1);
   };

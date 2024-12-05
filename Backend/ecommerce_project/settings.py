@@ -91,7 +91,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Ecommerce_Project',
         'USER': 'postgres',
-        'PASSWORD': '123Randy',
+        'PASSWORD': 'admin',
         'HOST': 'localhost',  # o el host de tu servidor de PostgreSQL
         'PORT': '5432',       # el puerto predeterminado de PostgreSQL
     }
@@ -115,7 +115,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
-]
+] 
+
+
 
 
 # Internationalization

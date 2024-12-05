@@ -16,12 +16,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework.authtoken.views import obtain_auth_token 
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # For JWT Authentication
 from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('products/', include('products.urls')),
-    path('shopping_car/', include('shopping_car.urls'))
+    path('shopping_car/', include('shopping_car.urls')),  
+    
+
+    # Authentication endpoints for Token and JWT
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # JWT token obtain
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # JWT token refresh
+    path('api-token-auth/', obtain_auth_token),  # Token authentication endpoint
+    path('api-auth/', include('rest_framework.urls')),
+    
 ]
