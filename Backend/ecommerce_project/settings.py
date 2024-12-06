@@ -12,6 +12,14 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,7 +35,7 @@ SECRET_KEY = 'django-insecure-=6o*l@^$-6gz70elr^w(__g@4!=wmp1d=1sww^d3^h^ot&qm67
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [os.environ.get("RENDER_EXTERNAL_HOSTNAME", ""), os.environ.get("DATABASE_HOST", "")]
 
 
 # Application definition
@@ -42,10 +50,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'coreapi',
+    'corsheaders',
+    'drf_yasg',
     'users',
     'products',
-    'corsheaders',
     'shopping_car',
+    'orders',
 
 ]
 
@@ -67,7 +77,7 @@ ROOT_URLCONF = 'ecommerce_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'users', 'templates')],  # Añade esta línea
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -89,15 +99,24 @@ WSGI_APPLICATION = 'ecommerce_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
+<<<<<<< HEAD
         'NAME': 'Ecommerce_Project',
         'USER': 'postgres',
         'PASSWORD': 'admin',
         'HOST': 'localhost',  # o el host de tu servidor de PostgreSQL
         'PORT': '5432',       # el puerto predeterminado de PostgreSQL
+=======
+        'NAME': os.environ.get("DB_NAME", ""),
+        'USER': os.environ.get("DB_USER", ""),
+        'PASSWORD': os.environ.get("PASSWORD", ""),
+        'HOST': os.environ.get("DATABASE_HOST", ""),  # o el host de tu servidor de PostgreSQL
+        'PORT': os.environ.get("DATABASE_PORT", "5432"),      # el puerto predeterminado de PostgreSQL
+        'OPTIONS': {
+            'sslmode': 'require',  # Obliga el uso de SSL
+        },
+>>>>>>> main
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -171,4 +190,12 @@ AUTH_USER_MODEL = 'users.Usuario'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Servidor de correo
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'ecommerceprojectds1@gmail.com'
+EMAIL_HOST_PASSWORD = 'tvqexgfnozvgpxju'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
