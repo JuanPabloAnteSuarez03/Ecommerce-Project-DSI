@@ -22,7 +22,8 @@ from rest_framework.response import Response
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request):
+    def post(self, request): 
+        
         username = request.data.get('username')
         password = request.data.get('password') 
         print("Request data:", request.data)
@@ -58,6 +59,7 @@ class LoginView(APIView):
                 'tokens': {
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
+
                 }
             })
         
@@ -75,7 +77,8 @@ class SignUpView(APIView):
         print("Request data:", request.data)
         serializer = UsuarioSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save() 
+            print("Submitted data after successful signup:", request.data)
             return Response({"message": "Usuario creado exitosamente", "user": serializer.data}, status=201)
         print("Serializer errors:", serializer.errors)  # Log validation errors
         
