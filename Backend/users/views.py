@@ -11,10 +11,6 @@ from .serializers import UsuarioSerializer
 from .mixins import StaffRequiredMixin
 from .permissions import IsStaffUser
 from django.contrib.auth.models import Group
-<<<<<<< HEAD
-import logging 
-from .models import Usuario, Rol
-=======
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -27,7 +23,8 @@ from django.core.mail import EmailMessage
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+from drf_yasg import openapi 
+import logging 
 
 
 
@@ -76,7 +73,6 @@ class LoginView(APIView):
         }
     )
     def post(self, request):
->>>>>>> 606cd88ecf30244279c6c1c8539a4296321d6156
         username = request.data.get('username')
         password = request.data.get('password') 
         print("Request data:", request.data)
@@ -135,9 +131,8 @@ class SignUpView(APIView):
     Vista para registrar nuevos usuarios.
     """
     permission_classes = [AllowAny]
-<<<<<<< HEAD
     
-    def post(self, request): 
+    def post(self, request):  
         print("Request data:", request.data)
         serializer = UsuarioSerializer(data=request.data)
         if serializer.is_valid():
@@ -146,7 +141,6 @@ class SignUpView(APIView):
             return Response({"message": "Usuario creado exitosamente", "user": serializer.data}, status=201)
         print("Serializer errors:", serializer.errors)  # Log validation errors
         
-=======
 
     @swagger_auto_schema(
         operation_description="Registrar un nuevo usuario en el sistema.",
@@ -180,7 +174,6 @@ class SignUpView(APIView):
 
 
     def post(self, request):
->>>>>>> 606cd88ecf30244279c6c1c8539a4296321d6156
         try:
             # Obtén los datos del formulario
             username = request.data.get('username')
@@ -209,10 +202,7 @@ class SignUpView(APIView):
                 
                 
 
-<<<<<<< HEAD
             # Check for unique constraints
-=======
->>>>>>> 606cd88ecf30244279c6c1c8539a4296321d6156
             if Usuario.objects.filter(username=username).exists():
                 return Response(
                     {'message': 'El nombre de usuario ya existe'},
@@ -317,12 +307,6 @@ class SignUpView(APIView):
             )
 
 
-<<<<<<< HEAD
-=======
-
-
-
->>>>>>> 606cd88ecf30244279c6c1c8539a4296321d6156
 class ChangePasswordView(APIView):
     """
     Vista para cambiar la contraseña de un usuario autenticado.

@@ -40,7 +40,8 @@ const Login = () => {
           cedula, 
           direccion,
           telefono,
-          rol: 1,
+          rol:2, 
+          groups:[1],
           
         });
 

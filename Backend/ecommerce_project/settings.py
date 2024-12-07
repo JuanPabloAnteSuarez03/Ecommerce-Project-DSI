@@ -14,7 +14,8 @@ from pathlib import Path
 from datetime import timedelta
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+from dotenv import load_dotenv 
+
 
 load_dotenv()
 
@@ -35,7 +36,7 @@ SECRET_KEY = 'django-insecure-=6o*l@^$-6gz70elr^w(__g@4!=wmp1d=1sww^d3^h^ot&qm67
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [os.environ.get("RENDER_EXTERNAL_HOSTNAME", ""), os.environ.get("DATABASE_HOST", "")]
+ALLOWED_HOSTS = ['127.0.0.1','localhost',os.environ.get("RENDER_EXTERNAL_HOSTNAME", ""), os.environ.get("DATABASE_HOST", "")]
 
 
 # Application definition
@@ -99,13 +100,6 @@ WSGI_APPLICATION = 'ecommerce_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-<<<<<<< HEAD
-        'NAME': 'Ecommerce_Project',
-        'USER': 'postgres',
-        'PASSWORD': 'admin',
-        'HOST': 'localhost',  # o el host de tu servidor de PostgreSQL
-        'PORT': '5432',       # el puerto predeterminado de PostgreSQL
-=======
         'NAME': os.environ.get("DB_NAME", ""),
         'USER': os.environ.get("DB_USER", ""),
         'PASSWORD': os.environ.get("PASSWORD", ""),
@@ -114,7 +108,6 @@ DATABASES = {
         'OPTIONS': {
             'sslmode': 'require',  # Obliga el uso de SSL
         },
->>>>>>> 606cd88ecf30244279c6c1c8539a4296321d6156
     }
 }
 
