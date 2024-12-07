@@ -34,7 +34,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-=6o*l@^$-6gz70elr^w(__g@4!=wmp1d=1sww^d3^h^ot&qm67'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ALLOWED_HOSTS = ['127.0.0.1','localhost',os.environ.get("RENDER_EXTERNAL_HOSTNAME", ""), os.environ.get("DATABASE_HOST", "")]
 
@@ -71,7 +73,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True  # Solo para desarrollo
+CSRF_TRUSTED_ORIGINS = [
+    'https://ecommerce-backend-zm43.onrender.com',
+    
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'ecommerce_project.urls'
 
@@ -90,6 +97,12 @@ TEMPLATES = [
         },
     },
 ]
+
+ALLOWED_HOSTS = ['ecommerce-backend-zm43.onrender.com', 'localhost']
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True
 
 WSGI_APPLICATION = 'ecommerce_project.wsgi.application'
 
