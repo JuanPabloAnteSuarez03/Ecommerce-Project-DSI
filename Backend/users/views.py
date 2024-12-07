@@ -30,7 +30,6 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 
->>>>>>> 606cd88ecf30244279c6c1c8539a4296321d6156
 
 logger = logging.getLogger(__name__) 
 
@@ -43,10 +42,6 @@ class LoginView(APIView):
     """
     permission_classes = [AllowAny]
 
-<<<<<<< HEAD
-    def post(self, request): 
-        
-=======
     @swagger_auto_schema(
         operation_description="Autenticar un usuario con su username y password.",
         request_body=openapi.Schema(
