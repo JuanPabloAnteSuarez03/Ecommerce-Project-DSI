@@ -149,6 +149,23 @@ const menuItems = {
       ]
     }
   ]
+}; 
+
+export const getMenuItems = () => {
+  const isSuperuser = JSON.parse(localStorage.getItem('is_superuser')); // Retrieve and parse the value
+
+  if (isSuperuser) {
+    // Provide the full menu including admin-specific items if needed
+    return menuItems;
+  }
+
+  // Filter menu items for regular users
+  return {
+    ...menuItems,
+    items: menuItems.items.filter(
+      (item) => !['dashboard', 'utilities', 'producto'].includes(item.id) // Exclude these items
+    ),
+  };
 };
 
 export default menuItems;

@@ -14,7 +14,8 @@ from pathlib import Path
 from datetime import timedelta
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+from dotenv import load_dotenv 
+
 
 load_dotenv()
 
@@ -38,7 +39,7 @@ DEBUG = False # PARA PRODUCCION
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-ALLOWED_HOSTS = [os.environ.get("RENDER_EXTERNAL_HOSTNAME", ""), os.environ.get("DATABASE_HOST", "")]
+ALLOWED_HOSTS = ['127.0.0.1','localhost',os.environ.get("RENDER_EXTERNAL_HOSTNAME", ""), os.environ.get("DATABASE_HOST", "")]
 
 # Agrega dominios locales cuando DEBUG=True
 if DEBUG:
@@ -149,7 +150,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
-]
+] 
+
+
 
 
 # Internationalization
