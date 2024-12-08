@@ -1,15 +1,13 @@
 # views.py
+
 from django.utils import timezone
-from django.contrib.auth.models import User
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import get_object_or_404
 from .models import Carrito, CarritoItem
-#from ..users.models import Usuario
 from products.models import Producto
-from .serializers import CarritoSerializer, CarritoItemSerializer
+from .serializers import CarritoSerializer
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -21,6 +19,7 @@ from django.utils import timezone
 from .models import Carrito, CarritoItem
 from .serializers import CarritoSerializer
 from products.models import Producto
+
 
 
 class CartViewSet(viewsets.ModelViewSet):
