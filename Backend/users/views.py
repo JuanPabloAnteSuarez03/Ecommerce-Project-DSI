@@ -362,6 +362,71 @@ class ChangePasswordView(APIView):
             {'message': 'Contraseña actualizada exitosamente'},
             status=status.HTTP_200_OK
         )
+    
+class LogoutView(APIView):
+    """
+    Vista para cerrar sesión e invalidar el token de refresco.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            # Extraer el refresh token del cuerpo de la solicitud
+            refresh_token = request.data.get('refresh')
+            if not refresh_token:
+                return Response({'message': 'Se requiere un refresh token'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Colocar el refresh token en la blacklist
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response({'message': 'Cierre de sesión exitoso'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message': f'Error al cerrar sesión: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+class RefreshTokenView(APIView):
+    """
+    Vista para refrescar el token de acceso usando el refresh token.
+    """
+    permission_classes = [AllowAny]
+    @swagger_auto_schema(
+        operation_description="Refresca el token de acceso usando el refresh token.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'refresh': openapi.Schema(type=openapi.TYPE_STRING, description='Refresh token'),
+            },
+            required=['refresh'],
+        ),
+        responses={
+            200: openapi.Response(
+                description="Token de acceso refrescado exitosamente",
+                examples={
+                    "application/json": {
+                        "access": "ey... (nuevo access token)"
+                    }
+                },
+            ),
+            400: "Se requiere un refresh token válido.",
+        }
+    )
+
+    def post(self, request):
+        refresh_token = request.data.get('refresh')
+        if not refresh_token:
+            return Response({'message': 'Se requiere un refresh token'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Crear un objeto RefreshToken con el refresh token recibido
+            token = RefreshToken(refresh_token)
+            # Generar un nuevo access token
+            new_access_token = str(token.access_token)
+
+            return Response({'access': new_access_token}, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response({'message': f'Error al refrescar el token: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class AdminView(APIView):
     """
