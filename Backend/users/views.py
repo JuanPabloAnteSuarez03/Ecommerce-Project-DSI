@@ -23,10 +23,14 @@ from django.core.mail import EmailMessage
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+from drf_yasg import openapi 
+import logging 
 
 
 
+logger = logging.getLogger(__name__) 
+
+from rest_framework.response import Response
 
 
 class LoginView(APIView):
@@ -70,8 +74,10 @@ class LoginView(APIView):
     )
     def post(self, request):
         username = request.data.get('username')
-        password = request.data.get('password')
-
+        password = request.data.get('password') 
+        print("Request data:", request.data)
+        
+        
         if not username or not password:
             return Response(
                 {'message': 'Se requieren username y password'},
@@ -95,7 +101,8 @@ class LoginView(APIView):
 
         if check_password(password, user.password):
             refresh = RefreshToken.for_user(user)
-            refresh['rol'] = user.rol.nombre
+            refresh['rol'] = user.rol.nombre 
+            
 
             return Response({
                 'message': 'Login exitoso',
@@ -108,6 +115,7 @@ class LoginView(APIView):
                 'tokens': {
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
+
                 }
             })
         
@@ -116,11 +124,14 @@ class LoginView(APIView):
             status=status.HTTP_401_UNAUTHORIZED
         )
 
+
+
 class SignUpView(APIView):
     """
     Vista para registrar nuevos usuarios.
     """
     permission_classes = [AllowAny]
+    
 
     @swagger_auto_schema(
         operation_description="Registrar un nuevo usuario en el sistema.",
@@ -165,17 +176,24 @@ class SignUpView(APIView):
             password2 = request.data.get('password2')
             direccion = request.data.get('direccion')
             telefono = request.data.get('telefono')
-            rol_nombre = request.data.get('rol')
-            groups_ids = request.data.get('groups', [])
+            rol_nombre = request.data.get('rol', {}).get('nombre')  # Get 'nombre' field from 'rol'
 
-            # Verificaciones
+            # Debugging log statements
+            logger.debug(f"Received data: {request.data}")
+            logger.debug(f"Role name: {rol_nombre}")
+
+            # Verifications
             if not all([username, email, first_name, last_name, cedula,
                         password1, password2, direccion, telefono, rol_nombre]):
+                
                 return Response(
                     {'message': 'Todos los campos son obligatorios'},
                     status=status.HTTP_400_BAD_REQUEST
-                )
+                ) 
+                
+                
 
+            # Check for unique constraints
             if Usuario.objects.filter(username=username).exists():
                 return Response(
                     {'message': 'El nombre de usuario ya existe'},
@@ -200,16 +218,18 @@ class SignUpView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Obtener el rol
+           
+            # Get the role or create it if it doesn't exist
             try:
                 rol = Rol.objects.get(nombre=rol_nombre)
             except Rol.DoesNotExist:
-                return Response(
-                    {'message': 'Rol no válido'},
-                    status=status.HTTP_400_BAD_REQUEST
+                logger.debug(f"Role '{rol_nombre}' not found, creating it.")
+                rol = Rol.objects.create(
+                    nombre=rol_nombre,
+                    descripcion='Comprador'  # Default description for new role
                 )
 
-            # Crear el usuario
+            # Create the user
             usuario = Usuario.objects.create(
                 username=username,
                 email=email,
@@ -223,7 +243,8 @@ class SignUpView(APIView):
                 is_active=False  # El usuario está inactivo hasta que confirme el correo
             )
 
-            # Asignar grupos
+            # Assign groups if provided
+            groups_ids = request.data.get('groups', [])
             if groups_ids:
                 try:
                     groups = Group.objects.filter(id__in=groups_ids)
@@ -234,7 +255,7 @@ class SignUpView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-            # Obtener permisos asociados a los grupos del usuario
+            # Get permissions associated with the user's groups
             permisos = usuario.get_group_permissions()
 
             # Enviar correo de confirmación
@@ -270,13 +291,11 @@ class SignUpView(APIView):
             }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
+            logger.error(f"Error creating user: {str(e)}")
             return Response(
                 {'message': f'Error al crear el usuario: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-
-
 
 
 class ChangePasswordView(APIView):
