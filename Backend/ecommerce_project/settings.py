@@ -34,11 +34,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-=6o*l@^$-6gz70elr^w(__g@4!=wmp1d=1sww^d3^h^ot&qm67'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+#DEBUG = True # PARA DESARROLLO
+DEBUG = False # PARA PRODUCCION
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ALLOWED_HOSTS = ['127.0.0.1','localhost',os.environ.get("RENDER_EXTERNAL_HOSTNAME", ""), os.environ.get("DATABASE_HOST", "")]
+
+# Agrega dominios locales cuando DEBUG=True
+if DEBUG:
+    ALLOWED_HOSTS += ["localhost", "127.0.0.1"]
+
+
+SECURE_SSL_REDIRECT = False
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+
 
 
 # Application definition
@@ -78,6 +89,10 @@ CSRF_TRUSTED_ORIGINS = [
     
 ]
 
+# Agrega orígenes locales cuando DEBUG=True
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS += ['http://localhost:8000', 'http://127.0.0.1:8000']
+
 CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'ecommerce_project.urls'
@@ -98,11 +113,6 @@ TEMPLATES = [
     },
 ]
 
-ALLOWED_HOSTS = ['ecommerce-backend-zm43.onrender.com', 'localhost']
-
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True
 
 WSGI_APPLICATION = 'ecommerce_project.wsgi.application'
 
