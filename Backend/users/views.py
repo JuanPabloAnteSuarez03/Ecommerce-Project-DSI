@@ -132,15 +132,6 @@ class SignUpView(APIView):
     """
     permission_classes = [AllowAny]
     
-    def post(self, request):  
-        print("Request data:", request.data)
-        serializer = UsuarioSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save() 
-            print("Submitted data after successful signup:", request.data)
-            return Response({"message": "Usuario creado exitosamente", "user": serializer.data}, status=201)
-        print("Serializer errors:", serializer.errors)  # Log validation errors
-        
 
     @swagger_auto_schema(
         operation_description="Registrar un nuevo usuario en el sistema.",
