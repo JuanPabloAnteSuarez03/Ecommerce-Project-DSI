@@ -131,7 +131,7 @@ class SignUpView(APIView):
     Vista para registrar nuevos usuarios.
     """
     permission_classes = [AllowAny]
-    
+        
 
     @swagger_auto_schema(
         operation_description="Registrar un nuevo usuario en el sistema.",
@@ -181,6 +181,7 @@ class SignUpView(APIView):
             # Debugging log statements
             logger.debug(f"Received data: {request.data}")
             logger.debug(f"Role name: {rol_nombre}")
+            print(request.data)
 
             # Verifications
             if not all([username, email, first_name, last_name, cedula,
