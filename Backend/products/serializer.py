@@ -13,7 +13,7 @@ class CategorySerializer(serializers.ModelSerializer):
     )
 
 class ProductoSerializer(serializers.ModelSerializer):
-    imagen = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Producto
@@ -41,8 +41,7 @@ class ProductoSerializer(serializers.ModelSerializer):
         help_text="ID del usuario vendedor",
         queryset=Usuario.objects.all()  # Asegúrate de importar User
     )
-    def get_imagen(self, obj):
-        request = self.context.get('request') 
-        if obj.imagen:
-            return request.build_absolute_uri(obj.imagen.url)  
-        return None  
+    imagen = serializers.ImageField(
+        help_text="Imagen del producto (opcional)",
+        required=False
+    )
