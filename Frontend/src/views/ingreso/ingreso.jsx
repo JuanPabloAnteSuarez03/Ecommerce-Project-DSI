@@ -1,105 +1,27 @@
-import React, {useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Card, Button, Form, Col, Row } from 'react-bootstrap';
-import { FaBox, FaDollarSign, FaCalendarAlt, FaIndustry, FaPen } from 'react-icons/fa';
-import { BsArrowRight, BsArrowLeft } from 'react-icons/bs'; 
+import { FaBox, FaDollarSign, FaCalendarAlt, FaPen } from 'react-icons/fa';
+import { BsArrowRight, BsArrowLeft } from 'react-icons/bs';
 
 import axiosInstance from '../../utils/axios';
 
-
-
 function IngresoProducto() {
-  const [categories, setCategories] = useState([]);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axiosInstance.get('/products/api');
-        setCategories(response.data);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    };
-
-    fetchCategories();
-  }, []);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     productName: '',
     productDescription: '',
-    cost: '',
     sellingPrice: '',
     quantity: 1,
     productImage: '',
-    productDate: '',
-    distributor: '',
-    isNewDistributor: false,
-    distributorID: '',
-    distributorCity: '',
-    contactName: '',
-    contactNumber: '',
-    companyAddress: '',
-    companyNIT: '',
-    bankAccountNumber: '',
+    category: '', // Category ID
   });
-  const [distributorData, setDistributorData] = useState({
-    distributorID: '',
-    distributorCity: '',
-    contactName: '',
-    contactNumber: '',
-    companyAddress: '',
-    companyNIT: '',
-    bankAccountNumber: '',
-  });
-  const [distributors, setDistributors] = useState([
-    {
-      name: 'distribuidor1',
-      distributorID: 'D1',
-      distributorCity: 'Bogotá',
-      contactName: 'Juan Pérez',
-      contactNumber: '123456789',
-      companyAddress: 'Calle 123',
-      companyNIT: '123456789-0',
-      bankAccountNumber: '0012345678',
-    },
-    {
-      name: 'distribuidor2',
-      distributorID: 'D2',
-      distributorCity: 'Medellín',
-      contactName: 'Carlos Gómez',
-      contactNumber: '987654321',
-      companyAddress: 'Carrera 45',
-      companyNIT: '987654321-1',
-      bankAccountNumber: '0098765432',
-    },
-    {
-      name: 'distribuidor3',
-      distributorID: 'D3',
-      distributorCity: 'Cali',
-      contactName: 'Ana López',
-      contactNumber: '456789012',
-      companyAddress: 'Avenida 67',
-      companyNIT: '456789012-3',
-      bankAccountNumber: '0045678901',
-    },
-  ]);
-  const [distributorFound, setDistributorFound] = useState(false);
-  const [isDataModified, setIsDataModified] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   // Handle changes in the form inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
-
-    // If data has changed, mark the distributor data as modified
-    if (distributorFound) {
-      setDistributorData((prevData) => {
-        const newData = { ...prevData, [name]: value };
-        setIsDataModified(JSON.stringify(newData) !== JSON.stringify(distributorData));
-        return newData;
-      });
-    }
   };
 
   // Handle image upload
@@ -109,7 +31,7 @@ function IngresoProducto() {
 
   // Handle next step
   const nextStep = () => {
-    if (step < 4) setStep(step + 1);
+    if (step < 3) setStep(step + 1);
   };
 
   // Handle previous step
@@ -117,103 +39,49 @@ function IngresoProducto() {
     if (step > 1) setStep(step - 1);
   };
 
-  // Handle distributor search
-  const handleDistributorSearch = () => {
-    const foundDistributor = distributors.find((distributor) =>
-      distributor.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(formData.distributor.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
-    );
-
-    if (foundDistributor) {
-      setDistributorData(foundDistributor);
-      setDistributorFound(true);
-      setIsDataModified(false); // Reset data modified state when distributor is found
-      setSuccessMessage(''); // Clear any previous success message
-    } else {
-      setDistributorData({
-        distributorID: '',
-        distributorCity: '',
-        contactName: '',
-        contactNumber: '',
-        companyAddress: '',
-        companyNIT: '',
-        bankAccountNumber: '',
-      });
-      setDistributorFound(false);
-      setIsDataModified(false);
-    }
-  };
-
-  // Handle new distributor toggle
-  const handleDistributorToggle = () => {
-    setFormData((prevData) => ({
-      ...prevData,
-      isNewDistributor: !prevData.isNewDistributor,
-    }));
-  };
-
-  // Handle submit of new distributor
-  const handleNewDistributorSubmit = () => {
-    setDistributors((prevDistributors) => [
-      ...prevDistributors,
-      { ...distributorData, name: formData.distributor },
-    ]);
-    setFormData({
-      productName: '',
-      productDescription: '',
-      cost: '',
-      sellingPrice: '',
-      quantity: 1,
-      productImage: '',
-      productDate: '',
-      distributor: '',
-      isNewDistributor: false,
-      distributorID: '',
-      distributorCity: '',
-      contactName: '',
-      contactNumber: '',
-      companyAddress: '',
-      companyNIT: '',
-      bankAccountNumber: '',
-    });
-    setStep(1);
-    setSuccessMessage('Datos de distribuidor nuevo ingresados exitosamente');
-  };
-
-  // Handle update of distributor data
-  const handleUpdateDistributor = () => {
-    const updatedDistributors = distributors.map((distributor) =>
-      distributor.name === formData.distributor ? { ...distributorData, name: formData.distributor } : distributor
-    );
-    setDistributors(updatedDistributors);
-    setSuccessMessage('Datos ingresados exitosamente');
-  };
-
-  // Handle key down event for Enter key
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleDistributorSearch();
-    }
-  };
-
+  // Handle form submission
   const handleSubmit = async () => {
     const productData = new FormData();
     productData.append('nombre_producto', formData.productName);
     productData.append('descripcion', formData.productDescription);
+    productData.append('categoria', formData.category); // Category ID
     productData.append('precio', formData.sellingPrice);
     productData.append('stock', formData.quantity);
-    productData.append('categoria', formData.category); // Use category ID
-    productData.append('imagen', formData.productImage); // Handle file upload
-    productData.append('vendedor', '1'); // Replace with the actual seller ID
+    productData.append('vendedor','3'); // Fixed seller ID
   
+    if (formData.productImage) {
+      productData.append('imagen', formData.productImage); 
+    }
+
+    
     try {
-      const response = await axiosInstance.post('/products/api/productos/', productData);
-      alert('Producto ingresado con éxito:', response.data);
+      
+      console.log('Datos enviados al backend:');
+      for (let pair of productData.entries()) {
+          console.log(`${pair[0]}: ${pair[1]}`);
+      }      
+      const response = await axiosInstance.post('/products/api/productos/', productData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    }); 
+      alert('Producto ingresado con éxito:', response.data); 
+      
     } catch (error) {
       console.error('Error al ingresar el producto:', error);
       alert('Error al ingresar el producto');
     }
-  
-    console.log(formData);
+
+    setFormData({
+      productName: '',
+      productDescription: '',
+      sellingPrice: '',
+      quantity: 1,
+      productImage: '',
+      productDate: '',
+      category: '',
+    });
+    
     setStep(1);
   };
 
@@ -253,22 +121,9 @@ function IngresoProducto() {
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Costo</Form.Label>
-                  <Form.Control
-                    type="number"
-                    name="cost"
-                    value={formData.cost}
-                    onChange={handleChange}
-                    placeholder="Ingresa el costo del producto"
-                    min="0"
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
                   <Form.Label>Precio de Venta</Form.Label>
                   <Form.Control
-                    type="number"
+                    type="text"
                     name="sellingPrice"
                     value={formData.sellingPrice}
                     onChange={handleChange}
@@ -277,8 +132,6 @@ function IngresoProducto() {
                   />
                 </Form.Group>
               </Col>
-            </Row>
-            <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Cantidad</Form.Label>
@@ -292,18 +145,20 @@ function IngresoProducto() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Fecha del Producto</Form.Label>
-                  <Form.Control
-                    type="date"
-                    name="productDate"
-                    value={formData.productDate}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
             </Row>
+            <Form.Group className="mb-3">
+              <Form.Label>Categoría</Form.Label>
+              <Form.Select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+              >
+                <option value="">Selecciona una categoría</option>
+                <option value="1">Electrodomésticos</option>
+                <option value="2">Útiles</option>
+                <option value="3">Libros</option>
+              </Form.Select>
+            </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Imagen del Producto</Form.Label>
               <Form.Control
@@ -315,198 +170,6 @@ function IngresoProducto() {
           </>
         );
       case 3:
-        return (
-          <>
-            <h4><FaIndustry /> Datos del Distribuidor</h4>
-            <Form.Group className="mb-3">
-              <Form.Label>Distribuidor</Form.Label>
-              <Form.Control
-                type="text"
-                name="distributor"
-                value={formData.distributor}
-                onChange={handleChange}
-                onKeyDown={handleKeyDown}
-                placeholder="Escribe el nombre del distribuidor"
-              />
-              <Button variant="info" onClick={handleDistributorSearch}>
-                Buscar Distribuidor
-              </Button>
-            </Form.Group>
-
-            {distributorFound && (
-              <div>
-                <h5>Datos del Distribuidor</h5>
-                <Form.Group className="mb-3">
-                  <Form.Label>ID del Distribuidor</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="distributorID"
-                    value={distributorData.distributorID}
-                    onChange={handleChange}
-                    disabled
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Ciudad</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="distributorCity"
-                    value={distributorData.distributorCity}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Nombre de Contacto</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="contactName"
-                    value={distributorData.contactName}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Teléfono de Contacto</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="contactNumber"
-                    value={distributorData.contactNumber}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Dirección de la Empresa</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="companyAddress"
-                    value={distributorData.companyAddress}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>NIT de la Empresa</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="companyNIT"
-                    value={distributorData.companyNIT}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Cuenta Bancaria</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="bankAccountNumber"
-                    value={distributorData.bankAccountNumber}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-                <Button
-                  variant="primary"
-                  onClick={handleUpdateDistributor}
-                  disabled={!isDataModified}
-                >
-                  Actualizar
-                </Button>
-              </div>
-            )}
-
-            <Form.Check
-              type="checkbox"
-              label="Distribuidor Nuevo"
-              checked={formData.isNewDistributor}
-              onChange={handleDistributorToggle}
-            />
-            {formData.isNewDistributor && (
-              <>
-                <h5>Ingresar Nuevo Distribuidor</h5>
-                <Form.Group className="mb-3">
-                  <Form.Label>Nombre del Distribuidor</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="distributor"
-                    value={formData.distributor}
-                    onChange={handleChange}
-                    placeholder="Nombre del distribuidor"
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>ID del Distribuidor</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="distributorID"
-                    value={formData.distributorID}
-                    onChange={handleChange}
-                    placeholder="ID del distribuidor"
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Ciudad</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="distributorCity"
-                    value={formData.distributorCity}
-                    onChange={handleChange}
-                    placeholder="Ciudad"
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Nombre de Contacto</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="contactName"
-                    value={formData.contactName}
-                    onChange={handleChange}
-                    placeholder="Nombre del encargado"
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Teléfono de Contacto</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="contactNumber"
-                    value={formData.contactNumber}
-                    onChange={handleChange}
-                    placeholder="Número de contacto"
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Dirección de la Empresa</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="companyAddress"
-                    value={formData.companyAddress}
-                    onChange={handleChange}
-                    placeholder="Dirección"
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>NIT de la Empresa</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="companyNIT"
-                    value={formData.companyNIT}
-                    onChange={handleChange}
-                    placeholder="NIT"
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Cuenta Bancaria</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="bankAccountNumber"
-                    value={formData.bankAccountNumber}
-                    onChange={handleChange}
-                    placeholder="Número de cuenta bancaria"
-                  />
-                </Form.Group>
-                <Button variant="success" onClick={handleNewDistributorSubmit}>
-                  Ingresar Nuevo Distribuidor
-                </Button>
-              </>
-            )}
-          </>
-        );
-      case 4:
         return (
           <>
             <h4><FaPen /> Finalizar Ingreso de Datos</h4>
@@ -537,7 +200,7 @@ function IngresoProducto() {
             <Button
               variant="primary"
               onClick={nextStep}
-              disabled={step === 4}
+              disabled={step === 3}
             >
               Continuar <BsArrowRight />
             </Button>
