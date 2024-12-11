@@ -151,21 +151,34 @@ const menuItems = {
   ]
 }; 
 
-export const getMenuItems = () => {
-  const isSuperuser = JSON.parse(localStorage.getItem('is_superuser')); // Retrieve and parse the value
+export const getMenuItems = async () => {
+  try {
+    // Realiza la solicitud para obtener el grupo del usuario
+    const response = await axiosInstance.get('/users/comprador/');
+    const { grupo } = response.data;
 
-  if (isSuperuser) {
-    // Provide the full menu including admin-specific items if needed
-    return menuItems;
+    if (grupo === 1) {
+      // Si el grupo es 1 (administrador), muestra todos los elementos
+      return menuItems;
+    }
+
+    // Si no es administrador, filtra los elementos del menú
+    return {
+      ...menuItems,
+      items: menuItems.items.filter(
+        (item) => !['dashboard', 'utilities', 'producto'].includes(item.id) // Excluir estos elementos
+      ),
+    };
+  } catch (error) {
+    console.error('Error obteniendo grupo del usuario:', error);
+    return {
+      ...menuItems,
+      items: [], // Devuelve un menú vacío en caso de error
+    };
   }
-
-  // Filter menu items for regular users
-  return {
-    ...menuItems,
-    items: menuItems.items.filter(
-      (item) => !['dashboard', 'utilities', 'producto'].includes(item.id) // Exclude these items
-    ),
-  };
 };
 
 export default menuItems;
+
+
+

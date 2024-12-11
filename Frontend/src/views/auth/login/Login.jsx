@@ -45,7 +45,8 @@ const Login = () => {
           telefono,
           rol: 'Comprador',
           groups: [2],
-        });
+        }); 
+        console.log('Respuesta completa del backend:', response.data);
 
         if (response.status === 201) {
           setMessage('Registro exitoso. Ahora puedes iniciar sesión.');
