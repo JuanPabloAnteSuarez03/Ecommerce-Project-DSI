@@ -53,19 +53,23 @@ const Login = () => {
         }
       } else {
         // Inicio de sesión
-        const response = await axiosInstance.post('/users/login/', {
+        const response = await axiosInstance.post('users/login/', {
           username: loginUsername,
           password: loginPassword,
         });
+        console.log('Respuesta completa del backend:', response.data);
+        const {access, refresh} = response.data.tokens; 
+        console.log('Access Token:', access);
+        console.log('Refresh Token:', refresh);
 
-        const { access, refresh, isSuperuser } = response.data;
-
-        localStorage.setItem('userRole', isSuperuser ? 'superuser' : 'user');
+        
         localStorage.setItem('accessToken', access);
         localStorage.setItem('refreshToken', refresh);
+        console.log('Access Token guardado:', localStorage.getItem('accessToken'));
+        console.log('Refresh Token guardado:', localStorage.getItem('refreshToken'));
 
         setMessage(`Bienvenido, ${loginUsername}`);
-        navigate(isSuperuser ? '/app/dashboard/analytics' : '/productos');
+        navigate('/productos');
       }
     } catch (error) {
       console.error('Error:', error.response || error);
