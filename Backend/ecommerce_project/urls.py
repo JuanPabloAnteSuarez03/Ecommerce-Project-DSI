@@ -42,22 +42,14 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('products/', include('products.urls')),
-<<<<<<< HEAD
     path('shopping_car/', include('shopping_car.urls')),  
-    
 
-    # Authentication endpoints for Token and JWT
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # JWT token obtain
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # JWT token refresh
-    path('api-token-auth/', obtain_auth_token),  # Token authentication endpoint
-    path('api-auth/', include('rest_framework.urls')),
     
-=======
     path('shopping_car/', include('shopping_car.urls')),
     path('orders/', include('orders.urls')),
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redocs/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('api/stripe/', include('stripe_payments.urls')),
 
 
->>>>>>> main
 ]

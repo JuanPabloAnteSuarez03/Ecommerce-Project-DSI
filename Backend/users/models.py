@@ -12,7 +12,7 @@ class Usuario(AbstractUser):
     cedula = models.CharField(max_length=10, unique=True)
     direccion = models.CharField(max_length=255)
     telefono = models.CharField(max_length=20)
-    rol = models.ForeignKey(Rol, on_delete=models.CASCADE)
+    rol = models.ForeignKey(Rol, on_delete=models.CASCADE, null=True)
     
     def __str__(self):
         return f"{self.username} - {self.rol.nombre}"

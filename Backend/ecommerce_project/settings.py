@@ -14,7 +14,8 @@ from pathlib import Path
 from datetime import timedelta
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+from dotenv import load_dotenv 
+
 
 load_dotenv()
 
@@ -33,9 +34,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-=6o*l@^$-6gz70elr^w(__g@4!=wmp1d=1sww^d3^h^ot&qm67'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True # PARA DESARROLLO
+#DEBUG = False # PARA PRODUCCION
 
-ALLOWED_HOSTS = [os.environ.get("RENDER_EXTERNAL_HOSTNAME", ""), os.environ.get("DATABASE_HOST", "")]
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+ALLOWED_HOSTS = ['127.0.0.1','localhost',os.environ.get("RENDER_EXTERNAL_HOSTNAME", ""), os.environ.get("DATABASE_HOST", "")]
+
+# Agrega dominios locales cuando DEBUG=True
+if DEBUG:
+    ALLOWED_HOSTS += ["localhost", "127.0.0.1"]
+
+
+SECURE_SSL_REDIRECT = False
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+
 
 
 # Application definition
@@ -49,6 +63,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt.token_blacklist',
     'coreapi',
     'corsheaders',
     'drf_yasg',
@@ -70,7 +85,16 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True  # Solo para desarrollo
+CSRF_TRUSTED_ORIGINS = [
+    'https://ecommerce-backend-zm43.onrender.com',
+    
+]
+
+# Agrega orígenes locales cuando DEBUG=True
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS += ['http://localhost:8000', 'http://127.0.0.1:8000']
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'ecommerce_project.urls'
 
@@ -90,6 +114,7 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = 'ecommerce_project.wsgi.application'
 
 
@@ -99,13 +124,6 @@ WSGI_APPLICATION = 'ecommerce_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-<<<<<<< HEAD
-        'NAME': 'Ecommerce_Project',
-        'USER': 'postgres',
-        'PASSWORD': 'admin',
-        'HOST': 'localhost',  # o el host de tu servidor de PostgreSQL
-        'PORT': '5432',       # el puerto predeterminado de PostgreSQL
-=======
         'NAME': os.environ.get("DB_NAME", ""),
         'USER': os.environ.get("DB_USER", ""),
         'PASSWORD': os.environ.get("PASSWORD", ""),
@@ -114,7 +132,6 @@ DATABASES = {
         'OPTIONS': {
             'sslmode': 'require',  # Obliga el uso de SSL
         },
->>>>>>> main
     }
 }
 
@@ -179,10 +196,13 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # Token de acceso dura 1 hora
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),     # Token de refresh dura 1 día
-    'ROTATE_REFRESH_TOKENS': False,
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_BLACKLIST': 'rest_framework_simplejwt.token_blacklist.BlacklistedToken',
 }
 
 
@@ -199,3 +219,7 @@ EMAIL_HOST_USER = 'ecommerceprojectds1@gmail.com'
 EMAIL_HOST_PASSWORD = 'tvqexgfnozvgpxju'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
+# Claves de stripe
+
+STRIPE_PUBLIC_KEY = 'pk_test_51QPXZxBAvRNYwiPiltGSMR1njoWREemAfmxe9A7JpmtCfFKwrfkozjWv1Ib7oKYbjNwc2cNdbfnm2mcQMuP3hH6g00GrGlx71A'
+STRIPE_SECRET_KEY = 'sk_test_51QPXZxBAvRNYwiPiVhyW1fdNrYQue7SBO0uk2fz5Grz5AwyRfnrdxsJsUflnCkSV8QvvAk9fepV9DN8StbQLIzmG00zUmRbwPX'

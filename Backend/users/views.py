@@ -11,10 +11,6 @@ from .serializers import UsuarioSerializer
 from .mixins import StaffRequiredMixin
 from .permissions import IsStaffUser
 from django.contrib.auth.models import Group
-<<<<<<< HEAD
-import logging 
-from .models import Usuario, Rol
-=======
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -27,10 +23,10 @@ from django.core.mail import EmailMessage
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+from drf_yasg import openapi 
+import logging 
 
 
->>>>>>> main
 
 logger = logging.getLogger(__name__) 
 
@@ -119,6 +115,7 @@ class LoginView(APIView):
                 'tokens': {
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
+
                 }
             })
         
@@ -134,17 +131,7 @@ class SignUpView(APIView):
     Vista para registrar nuevos usuarios.
     """
     permission_classes = [AllowAny]
-<<<<<<< HEAD
-    
-    def post(self, request): 
-        print("Request data:", request.data)
-        serializer = UsuarioSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Usuario creado exitosamente", "user": serializer.data}, status=201)
-        print("Serializer errors:", serializer.errors)  # Log validation errors
         
-=======
 
     @swagger_auto_schema(
         operation_description="Registrar un nuevo usuario en el sistema.",
@@ -178,7 +165,6 @@ class SignUpView(APIView):
 
 
     def post(self, request):
->>>>>>> main
         try:
             # Obtén los datos del formulario
             username = request.data.get('username')
@@ -195,6 +181,7 @@ class SignUpView(APIView):
             # Debugging log statements
             logger.debug(f"Received data: {request.data}")
             logger.debug(f"Role name: {rol_nombre}")
+            print(request.data)
 
             # Verifications
             if not all([username, email, first_name, last_name, cedula,
@@ -207,10 +194,7 @@ class SignUpView(APIView):
                 
                 
 
-<<<<<<< HEAD
             # Check for unique constraints
-=======
->>>>>>> main
             if Usuario.objects.filter(username=username).exists():
                 return Response(
                     {'message': 'El nombre de usuario ya existe'},
@@ -315,12 +299,6 @@ class SignUpView(APIView):
             )
 
 
-<<<<<<< HEAD
-=======
-
-
-
->>>>>>> main
 class ChangePasswordView(APIView):
     """
     Vista para cambiar la contraseña de un usuario autenticado.
@@ -384,6 +362,71 @@ class ChangePasswordView(APIView):
             {'message': 'Contraseña actualizada exitosamente'},
             status=status.HTTP_200_OK
         )
+    
+class LogoutView(APIView):
+    """
+    Vista para cerrar sesión e invalidar el token de refresco.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            # Extraer el refresh token del cuerpo de la solicitud
+            refresh_token = request.data.get('refresh')
+            if not refresh_token:
+                return Response({'message': 'Se requiere un refresh token'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Colocar el refresh token en la blacklist
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response({'message': 'Cierre de sesión exitoso'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message': f'Error al cerrar sesión: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+class RefreshTokenView(APIView):
+    """
+    Vista para refrescar el token de acceso usando el refresh token.
+    """
+    permission_classes = [AllowAny]
+    @swagger_auto_schema(
+        operation_description="Refresca el token de acceso usando el refresh token.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'refresh': openapi.Schema(type=openapi.TYPE_STRING, description='Refresh token'),
+            },
+            required=['refresh'],
+        ),
+        responses={
+            200: openapi.Response(
+                description="Token de acceso refrescado exitosamente",
+                examples={
+                    "application/json": {
+                        "access": "ey... (nuevo access token)"
+                    }
+                },
+            ),
+            400: "Se requiere un refresh token válido.",
+        }
+    )
+
+    def post(self, request):
+        refresh_token = request.data.get('refresh')
+        if not refresh_token:
+            return Response({'message': 'Se requiere un refresh token'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Crear un objeto RefreshToken con el refresh token recibido
+            token = RefreshToken(refresh_token)
+            # Generar un nuevo access token
+            new_access_token = str(token.access_token)
+
+            return Response({'access': new_access_token}, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response({'message': f'Error al refrescar el token: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class AdminView(APIView):
     """
