@@ -61,6 +61,13 @@ class ProductoView(viewsets.ModelViewSet):
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
 
+    def get_serializer_context(self):
+            """
+            Agrega el objeto request al contexto del serializador para construir URLs absolutas.
+            """
+            return {'request': self.request}
+
+
     @swagger_auto_schema(
         operation_description="Obtener una lista de todos los productos.",
         responses={200: ProductoSerializer(many=True)},
