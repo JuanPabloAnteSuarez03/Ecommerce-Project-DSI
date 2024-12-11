@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axiosInstance from '../../utils/axios';
+import './productos.css';
 
 function Productos() {
   const [productos, setProductos] = useState([]);
@@ -11,6 +12,8 @@ function Productos() {
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const itemsPerPage = 6; // Para mostrar 6 productos por página
+  const [isModalVisible, setIsModalVisible] = useState(false); // Estado para controlar la visibilidad de la ventana modal (emergente)
+  const [selectedProduct, setSelectedProduct] = useState(null); // Estado para el producto seleccionado
 
   useEffect(() => {
     const fetchProductos = async () => {
@@ -48,6 +51,15 @@ function Productos() {
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
   const handleMinPriceChange = (e) => setMinPrice(e.target.value);
   const handleMaxPriceChange = (e) => setMaxPrice(e.target.value);
+  const handleProductClick = (product) => {
+    setSelectedProduct(product);
+    setIsModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setSelectedProduct(null);
+    setIsModalVisible(false);
+  };
 
   return (
     <div className="container mt-5">
@@ -104,10 +116,15 @@ function Productos() {
               <img src={product.imagen} className="card-img-top" alt={product.nombre_producto} />
               <div className="card-body">
                 <h5 className="card-title">{product.nombre_producto}</h5>
-                <p className="card-text">{product.descripcion}</p>
+                {/*<p className="card-text">{product.descripcion}</p>*/}
                 <p className="card-text">Precio: ${product.precio}</p>
                 <p className="card-text">Stock: {product.stock}</p>
-                <button className="btn btn-primary">Agregar al carrito</button>
+                <div className="button-group">
+                  <button className="btn btn-primary">Agregar al carrito</button>
+                  <button className="btn btn-secondary" onClick={() => handleProductClick(product)}>
+                    Ver detalles
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -127,6 +144,22 @@ function Productos() {
           </ul>
         </nav>
       </div>
+
+      {/* Ventana flotante */}
+      {isModalVisible && selectedProduct && (
+        <div className="modal-overlay">
+          <div className="modal-container">
+            <button className="close-button" onClick={handleModalClose}>×</button>
+            <img src={selectedProduct.imagen} alt={selectedProduct.nombre_producto} className="modal-image" />
+            <h5 className="card-title">{selectedProduct.nombre_producto}</h5>
+            <br /> {/* Salto de línea */}
+            <p><strong>Descripción:</strong> {selectedProduct.descripcion || "Sin descripción adicional"}</p>
+            <p className="card-text">Precio: ${selectedProduct.precio}</p>
+            <p className="card-text">Stock: {selectedProduct.stock}</p> 
+            <button className="btn btn-primary">Agregar al carrito</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
