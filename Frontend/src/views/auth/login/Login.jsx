@@ -43,7 +43,9 @@ const Login = () => {
           cedula,
           direccion,
           telefono,
-          rol: 'Comprador',
+          rol: {
+            nombre: 'Comprador'  // Cambia esto de un string a un objeto
+          },
           groups: [2],
         }); 
         console.log('Respuesta completa del backend:', response.data);
