@@ -13,7 +13,7 @@ const menuItems = {
           id: 'dashboard',
           title: 'Dashboard',
           type: 'item',
-          icon: 'feather icon-home',
+          icon: 'feather icon-trending-up',
           url: '/app/dashboard/analytics',
           roles: [1] // Solo Administrador
         },
@@ -32,6 +32,14 @@ const menuItems = {
           icon: 'feather icon-box',
           url: '/productos',
           roles: [1, 2] // Solo Administrador
+        },
+        {
+          id: 'favorito',
+          title: 'Favoritos',
+          type: 'item',
+          icon: 'feather icon-heart',
+          url: '/favoritos',
+          roles: [1,2] // Solo Administrador
         },
         {
           id: 'usuario',
