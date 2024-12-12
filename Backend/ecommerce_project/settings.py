@@ -34,7 +34,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-=6o*l@^$-6gz70elr^w(__g@4!=wmp1d=1sww^d3^h^ot&qm67'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True # PARA DESARROLLO
+DEBUG = False # PARA DESARROLLO
 #DEBUG = False # PARA PRODUCCION
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
