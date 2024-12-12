@@ -3,8 +3,10 @@ from rest_framework import serializers
 from .models import Producto, Categoria, ProductoFavorito
 from users.models import Usuario
 import base64
+import imghdr
 
 class CategorySerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Categoria
         fields = '__all__'
@@ -17,34 +19,31 @@ class ProductoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Producto
-        fields = '__all__'
+        fields  = ['id', 'nombre_producto', 'descripcion', 'categoria', 'precio', 'stock', 'vendedor', 'imagen']
 
-    nombre_producto = serializers.CharField(
-        help_text="Nombre del producto"
-    )
-    descripcion = serializers.CharField(
-        help_text="Descripción detallada del producto"
-    )
-    categoria = serializers.PrimaryKeyRelatedField(
-        help_text="ID de la categoría del producto",
-        queryset=Categoria.objects.all()
-    )
-    precio = serializers.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        help_text="Precio del producto"
-    )
-    stock = serializers.IntegerField(
-        help_text="Cantidad disponible en inventario"
-    )
-    vendedor = serializers.PrimaryKeyRelatedField(
-        help_text="ID del usuario vendedor",
-        queryset=Usuario.objects.all()  # Asegúrate de importar User
-    )
-    imagen = serializers.ImageField(
-        help_text="Imagen del producto (opcional)",
-        required=False
-    )
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.imagen:
+            import base64
+            imagen_base64 = base64.b64encode(instance.imagen).decode('utf-8')
+            representation['imagen'] = f"data:image/png;base64,{imagen_base64}"
+        return representation
+
+    def create(self, validated_data):
+        imagen = self.context['request'].FILES.get('imagen')
+        if imagen:
+            validated_data['imagen'] = imagen.read()
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        imagen = self.context['request'].FILES.get('imagen')
+        if imagen:
+            instance.imagen = imagen.read()
+        for attr, value in validated_data.items():
+            if attr != 'imagen':
+                setattr(instance, value)
+        instance.save()
+        return instance
 
 class ProductoFavoritoSerializer(serializers.ModelSerializer):
     class Meta:
