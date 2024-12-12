@@ -8,14 +8,18 @@ import './index.scss';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { ConfigProvider } from './contexts/ConfigContext';
-import { CartProvider } from './contexts/CartContext'; // Add this import
+import { CartProvider } from './contexts/CartContext';
+import { FavoriteProvider } from './contexts/FavoriteContext'; // Import FavoriteProvider
 
 const container = document.getElementById('root');
 const root = createRoot(container);
+
 root.render(
   <ConfigProvider>
-    <CartProvider> {/* Wrap the App with CartProvider */}
-      <App />
+    <CartProvider>
+      <FavoriteProvider> {/* Wrap the App with FavoriteProvider */}
+        <App />
+      </FavoriteProvider>
     </CartProvider>
   </ConfigProvider>
 );
