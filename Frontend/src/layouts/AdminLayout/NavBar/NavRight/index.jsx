@@ -173,17 +173,7 @@ const NavRight = () => {
                 </ListGroup.Item>
                 <ListGroup.Item as="li" bsPrefix=" ">
                   <Link to="#" className="dropdown-item">
-                    <i className="feather icon-user" /> Profile
-                  </Link>
-                </ListGroup.Item>
-                <ListGroup.Item as="li" bsPrefix=" ">
-                  <Link to="#" className="dropdown-item">
-                    <i className="feather icon-mail" /> My Messages
-                  </Link>
-                </ListGroup.Item>
-                <ListGroup.Item as="li" bsPrefix=" ">
-                  <Link to="#" className="dropdown-item">
-                    <i className="feather icon-lock" /> Lock Screen
+                    <i className="feather icon-user" /> Perfil
                   </Link>
                 </ListGroup.Item>
                 <ListGroup.Item as="li" bsPrefix=" ">
