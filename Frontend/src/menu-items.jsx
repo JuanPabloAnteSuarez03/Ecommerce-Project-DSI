@@ -31,7 +31,7 @@ const menuItems = {
           type: 'item',
           icon: 'feather icon-box',
           url: '/productos',
-          roles: [1] // Solo Administrador
+          roles: [1, 2] // Solo Administrador
         },
         {
           id: 'usuario',
@@ -78,35 +78,36 @@ const menuItems = {
  */
 export const getMenuItems = async () => {
   try {
-    // Obtener el grupo del usuario
+    // Obtener la información del usuario desde el backend
     const response = await axiosInstance.get('/users/comprador/');
-    const { grupo } = response.data;
+    console.log('Respuesta completa del backend:', response.data);
 
-    console.log('Usuario grupo:', grupo); // Log para verificar el grupo del usuario
+    // Acceder correctamente a is_staff
+    const { is_staff } = response.data.user; // Extraer de user
+    console.log('is_staff obtenido:', is_staff);
 
-    // Filtrar elementos del menú
+    // Determinar el rol basado en is_staff
+    const userRole = is_staff ? 1 : 2; // 1 = Administrador, 2 = Comprador
+    console.log('Rol del usuario:', userRole);
+
+    // Filtrar los elementos del menú según el rol
     const filteredMenuItems = {
       ...menuItems,
       items: menuItems.items.map(group => ({
         ...group,
         children: group.children.filter(item => {
-          const isAllowed = item.roles.includes(grupo);
-          console.log(`Filtrando ${item.title}:`, {
-            grupo,
-            roles: item.roles,
-            isAllowed
-          });
+          const isAllowed = item.roles.includes(userRole);
+          console.log(`Filtrando ${item.title}:`, { userRole, roles: item.roles, isAllowed });
           return isAllowed;
         })
-      })).filter(group => group.children.length > 0)
+      })).filter(group => group.children.length > 0) // Quitar grupos vacíos
     };
 
     console.log('Elementos de menú filtrados:', filteredMenuItems);
-
     return filteredMenuItems;
   } catch (error) {
-    console.error('Error obteniendo grupo del usuario:', error);
-    
+    console.error('Error obteniendo información del usuario:', error.response?.data || error.message);
+
     // En caso de error, devolver un menú vacío
     return {
       ...menuItems,
@@ -114,5 +115,7 @@ export const getMenuItems = async () => {
     };
   }
 };
+
+
 
 export default menuItems;
