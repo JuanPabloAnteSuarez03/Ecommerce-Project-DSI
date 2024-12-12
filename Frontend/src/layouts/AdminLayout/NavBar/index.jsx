@@ -7,6 +7,7 @@ import NavRight from './NavRight';
 
 import { ConfigContext } from '../../../contexts/ConfigContext';
 import * as actionType from '../../../store/actions';
+import "./styles.css"
 
 // assets
 import logo from '../../../assets/images/logo.png';
@@ -47,7 +48,7 @@ const NavBar = () => {
           <span />
         </Link>
         <Link to="#" className="b-brand">
-          <img id="main-logo" src={logo} alt="" className="logo" />
+          <img id="main-logo" src={logo} alt="" className="img-responsive" />
         </Link>
         <Link to="#" className={moreClass.join(' ')} onClick={() => setMoreToggle(!moreToggle)}>
           <i className="feather icon-more-vertical" />

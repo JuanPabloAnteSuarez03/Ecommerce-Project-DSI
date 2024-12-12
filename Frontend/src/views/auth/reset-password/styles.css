@@ -1,0 +1,9 @@
+.img-responsive {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain; /* O 'cover', dependiendo de cómo quieras que se ajuste */
+    display: block;
+    margin: 0 auto;
+  }
+
+  
