@@ -180,7 +180,11 @@ function Productos() {
                   <div className="button-group">
                     <button 
                       className="btn btn-primary"
-                      onClick={() => addToCart(product)}
+                      
+                      onClick={() => {
+                        console.log(product); // Verifica que el objeto tenga un campo `imagen`
+                        addToCart(product);
+                      }}
                     >
                       Agregar al carrito
                     </button>
