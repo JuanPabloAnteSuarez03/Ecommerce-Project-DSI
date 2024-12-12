@@ -200,6 +200,25 @@ class MarcarPedidoCompletadoView(APIView):
             
             # Marcar el pedido como completado
             pedido.completar_pedido()
+            # Preparar el email
+            subject = f'Se ha aceptado su pedido #{pedido.id}'
+            message = (
+                f'Hola {pedido.usuario.username},\n\n'
+                f'Hemos aceptado su pedido, y se va realizar el envío.\n\n'
+                f'Total: ${pedido.total:.2f}\n\n'
+                f'Saludos.'
+            )
+            from_email = settings.EMAIL_HOST_USER
+            to_email = pedido.usuario.email  # Asegúrate de que el usuario tiene un campo `email`
+
+            # Crear el objeto EmailMessage
+            email = EmailMessage(
+                subject,
+                message,
+                from_email,
+                [to_email]
+            )
+            email.send()
             
             return Response(
                 {"status": "success", "message": "Pedido completado exitosamente."},
@@ -210,3 +229,4 @@ class MarcarPedidoCompletadoView(APIView):
                 {"status": "error", "message": "Pedido no encontrado."},
                 status=status.HTTP_404_NOT_FOUND
             )
+        
