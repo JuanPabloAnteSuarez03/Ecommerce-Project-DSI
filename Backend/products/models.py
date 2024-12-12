@@ -38,6 +38,10 @@ class Producto(models.Model):
     stock = models.IntegerField(
         help_text="Cantidad disponible en inventario"
     )
+    ventas = models.IntegerField(
+        default=0,
+        help_text="Cantidad de veces que se ha vendido el producto"
+    )
     vendedor = models.ForeignKey(
         'users.Usuario', 
         on_delete=models.CASCADE,
@@ -51,10 +55,6 @@ class Producto(models.Model):
 
     def __str__(self):
         return f"{self.nombre_producto} - {self.categoria.nombre_categoria}"
-
-    class Meta:
-        verbose_name = "Producto"
-        verbose_name_plural = "Productos"
 
 
 class ProductoFavorito(models.Model):

@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'products',
     'shopping_car',
     'orders',
+    'dashboard',
 
 ]
 
