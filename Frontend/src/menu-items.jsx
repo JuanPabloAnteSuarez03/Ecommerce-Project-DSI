@@ -1,3 +1,6 @@
+
+import axiosInstance  from './utils/axios';
+
 const menuItems = {
   items: [
     {
@@ -11,87 +14,40 @@ const menuItems = {
           title: 'Dashboard',
           type: 'item',
           icon: 'feather icon-home',
-          url: '/app/dashboard/analytics'
+          url: '/app/dashboard/analytics',
+          roles: [1] // Solo Administrador
         },
         {
           id: 'carrito',
           title: 'Carrito',
           type: 'item',
-          icon: 'feather icon-home',
-          url: '/carrito'
+          icon: 'feather icon-shopping-cart',
+          url: '/carrito',
+          roles: [1, 2] // Administrador y Comprador
         },
         {
           id: 'producto',
           title: 'Productos',
           type: 'item',
-          icon: 'feather icon-home',
-          url: '/productos'
-        }, 
+          icon: 'feather icon-box',
+          url: '/productos',
+          roles: [1, 2] // Solo Administrador
+        },
         {
           id: 'usuario',
           title: 'Usuario',
           type: 'item',
-          icon: 'feather icon-home',
-          url: '/usuario'
-        }, 
+          icon: 'feather icon-user',
+          url: '/usuario',
+          roles: [1] // Solo Administrador
+        },
         {
           id: 'ingreso',
           title: 'Ingreso',
           type: 'item',
-          icon: 'feather icon-home',
-          url: '/ingreso'
-        }
-      ]
-    },
-    {
-      id: 'utilities',
-      title: 'Utilities',
-      type: 'group',
-      icon: 'icon-ui',
-      children: [
-        {
-          id: 'component',
-          title: 'Component',
-          type: 'collapse',
-          icon: 'feather icon-box',
-          children: [
-            {
-              id: 'button',
-              title: 'Button',
-              type: 'item',
-              url: '/basic/button'
-            },
-            {
-              id: 'badges',
-              title: 'Badges',
-              type: 'item',
-              url: '/basic/badges'
-            },
-            {
-              id: 'breadcrumb-pagination',
-              title: 'Breadcrumb & Pagination',
-              type: 'item',
-              url: '/basic/breadcrumb-pagination'
-            },
-            {
-              id: 'collapse',
-              title: 'Collapse',
-              type: 'item',
-              url: '/basic/collapse'
-            },
-            {
-              id: 'typography',
-              title: 'Typography',
-              type: 'item',
-              url: '/basic/typography'
-            },
-            {
-              id: 'tooltip-popovers',
-              title: 'Tooltip & Popovers',
-              type: 'item',
-              url: '/basic/tooltip-popovers'
-            }
-          ]
+          icon: 'feather icon-log-in',
+          url: '/ingreso',
+          roles: [1, 2] // Administrador y Comprador
         }
       ]
     },
@@ -101,7 +57,6 @@ const menuItems = {
       type: 'group',
       icon: 'icon-pages',
       children: [
-        
         {
           id: 'login',
           title: 'Login',
@@ -109,63 +64,58 @@ const menuItems = {
           icon: 'feather icon-log-in',
           url: '/auth/login-1',
           target: true,
-          breadcrumbs: false
-        },
-        {
-          id: 'reset-pass',
-          title: 'Reset Password',
-          type: 'item',
-          icon: 'feather icon-unlock',
-          url: '/auth/reset-password-1',
-          target: true,
-          breadcrumbs: false
-        }
-      ]
-    },
-    {
-      id: 'support',
-      title: 'Support',
-      type: 'group',
-      icon: 'icon-support',
-      children: [
-        {
-          id: 'sample-page',
-          title: 'Sample Page',
-          type: 'item',
-          url: '/sample-page',
-          classes: 'nav-item',
-          icon: 'feather icon-sidebar'
-        },
-        {
-          id: 'documentation',
-          title: 'Documentation',
-          type: 'item',
-          icon: 'feather icon-help-circle',
-          classes: 'nav-item',
-          url: 'https://codedthemes.gitbook.io/gradient-able-react/',
-          target: true,
-          external: true
+          breadcrumbs: false,
+          roles: [1, 2] // Disponible para ambos
         }
       ]
     }
   ]
-}; 
-
-export const getMenuItems = () => {
-  const isSuperuser = JSON.parse(localStorage.getItem('is_superuser')); // Retrieve and parse the value
-
-  if (isSuperuser) {
-    // Provide the full menu including admin-specific items if needed
-    return menuItems;
-  }
-
-  // Filter menu items for regular users
-  return {
-    ...menuItems,
-    items: menuItems.items.filter(
-      (item) => !['dashboard', 'utilities', 'producto'].includes(item.id) // Exclude these items
-    ),
-  };
 };
+
+/**
+ * Obtiene los elementos del menú según el rol del usuario
+ * @returns {Object} Elementos del menú filtrados
+ */
+export const getMenuItems = async () => {
+  try {
+    // Obtener la información del usuario desde el backend
+    const response = await axiosInstance.get('/users/comprador/');
+    console.log('Respuesta completa del backend:', response.data);
+
+    // Acceder correctamente a is_staff
+    const { is_staff } = response.data.user; // Extraer de user
+    console.log('is_staff obtenido:', is_staff);
+
+    // Determinar el rol basado en is_staff
+    const userRole = is_staff ? 1 : 2; // 1 = Administrador, 2 = Comprador
+    console.log('Rol del usuario:', userRole);
+
+    // Filtrar los elementos del menú según el rol
+    const filteredMenuItems = {
+      ...menuItems,
+      items: menuItems.items.map(group => ({
+        ...group,
+        children: group.children.filter(item => {
+          const isAllowed = item.roles.includes(userRole);
+          console.log(`Filtrando ${item.title}:`, { userRole, roles: item.roles, isAllowed });
+          return isAllowed;
+        })
+      })).filter(group => group.children.length > 0) // Quitar grupos vacíos
+    };
+
+    console.log('Elementos de menú filtrados:', filteredMenuItems);
+    return filteredMenuItems;
+  } catch (error) {
+    console.error('Error obteniendo información del usuario:', error.response?.data || error.message);
+
+    // En caso de error, devolver un menú vacío
+    return {
+      ...menuItems,
+      items: []
+    };
+  }
+};
+
+
 
 export default menuItems;
