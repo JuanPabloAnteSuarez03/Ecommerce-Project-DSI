@@ -13,7 +13,7 @@ const menuItems = {
           id: 'dashboard',
           title: 'Dashboard',
           type: 'item',
-          icon: 'feather icon-home',
+          icon: 'feather icon-trending-up',
           url: '/app/dashboard/analytics',
           roles: [1] // Solo Administrador
         },
