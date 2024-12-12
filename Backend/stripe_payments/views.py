@@ -40,8 +40,8 @@ class CreateCheckoutSessionView(APIView):
                 payment_method_types=['card'],
                 line_items=line_items,
                 mode='payment',
-                success_url='http://127.0.0.1:8000/success',
-                cancel_url='http://127.0.0.1:8000/cancel',
+                success_url='https://ecommerce-project-frontend-rhra.onrender.com/productos',
+                cancel_url='https://ecommerce-project-frontend-rhra.onrender.com/carrito',
             )
 
             return response.Response({'id': checkout_session.id})
