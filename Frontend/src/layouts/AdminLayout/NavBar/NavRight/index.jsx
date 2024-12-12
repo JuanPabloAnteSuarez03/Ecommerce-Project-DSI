@@ -56,7 +56,49 @@ const NavRight = () => {
 
   const toggleSettingsModal = () => {
     setShowSettings(!showSettings);
-  };
+  }; 
+
+
+const handleLogout = async () => {
+  try {
+    // Retrieve the token from localStorage
+    const token = localStorage.getItem('accessToken');
+
+    if (!token) {
+      // If no token, proceed to clear localStorage and redirect
+      localStorage.clear();
+      navigate('/auth/login-1');
+      return;
+    }
+
+    // Send POST request to logout endpoint with Authorization header
+    const response = await axiosInstance.post('/users/logout/', {}, {
+      headers: {
+        Authorization: `Bearer ${token}`, // Ensure the token is properly attached
+      }
+    });
+
+    // Log the response for debugging purposes
+    console.log('Logout response:', response);
+
+    // Clear tokens and redirect after successful logout
+    
+    navigate('/auth/login-1');  // Redirect to login page after logout
+
+  } catch (error) {
+    console.error('Error during logout:', error);
+
+    // Log the error response data for troubleshooting
+    if (error.response) {
+      console.log('Error response data:', error.response.data);
+      console.log('Error response status:', error.response.status);
+    }
+
+    // Handle failure (e.g., clear localStorage and redirect)
+    localStorage.clear();
+    navigate('/auth/login-1');
+  }
+};
 
 
   const handleSettingsChange = (event) => {
@@ -192,7 +234,7 @@ const NavRight = () => {
                   </Dropdown.Item>
                 </ListGroup.Item>
                 <ListGroup.Item as="li" bsPrefix=" ">
-                  <Link to="#" className="dropdown-item">
+                <Link to="#" className="dropdown-item" onClick={handleLogout}>
                     <i className="feather icon-log-out" /> Logout
                   </Link>
                 </ListGroup.Item>
