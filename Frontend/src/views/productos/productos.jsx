@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axiosInstance from '../../utils/axios';
+import { useCart } from '../../contexts/CartContext';
 import './productos.css';
 
 function Productos() {
@@ -11,18 +12,43 @@ function Productos() {
   const [currentPage, setCurrentPage] = useState(1);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const itemsPerPage = 6; // Para mostrar 6 productos por página
-  const [isModalVisible, setIsModalVisible] = useState(false); // Estado para controlar la visibilidad de la ventana modal (emergente)
-  const [selectedProduct, setSelectedProduct] = useState(null); // Estado para el producto seleccionado
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Use the cart context
+  const { addToCart } = useCart();
+
+  const itemsPerPage = 6;
 
   useEffect(() => {
     const fetchProductos = async () => {
       try {
+        setLoading(true);
+        setError(null);
+        
+        // Log the full request details for debugging
+        console.log('Fetching products from:', '/products/api/productos/');
+        
         const response = await axiosInstance.get('/products/api/productos/');
+        
+        // Log the response for debugging
+        console.log('Products response:', response.data);
+        
+        if (!response.data || response.data.length === 0) {
+          setError('No se encontraron productos');
+        }
+        
         setProductos(response.data);
       } catch (error) {
+        // More detailed error logging
         console.error('Error al obtener productos:', error);
-        alert('Hubo un error al cargar los productos.');
+        console.error('Error details:', error.response ? error.response.data : error.message);
+        
+        setError(error.response?.data?.message || 'Hubo un error al cargar los productos');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -51,6 +77,7 @@ function Productos() {
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
   const handleMinPriceChange = (e) => setMinPrice(e.target.value);
   const handleMaxPriceChange = (e) => setMaxPrice(e.target.value);
+
   const handleProductClick = (product) => {
     setSelectedProduct(product);
     setIsModalVisible(true);
@@ -60,6 +87,30 @@ function Productos() {
     setSelectedProduct(null);
     setIsModalVisible(false);
   };
+
+  // Handling loading and error states
+  if (loading) {
+    return (
+      <div className="container mt-5 text-center">
+        <div className="spinner-border" role="status">
+          <span className="visually-hidden">Cargando...</span>
+        </div>
+        <p>Cargando productos...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mt-5">
+        <div className="alert alert-danger" role="alert">
+          {error}
+          <br />
+          Verificá la conexión con el backend o la configuración de tu API.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mt-5">
@@ -110,25 +161,41 @@ function Productos() {
       </div>
 
       <div className="row">
-        {paginatedProducts.map(product => (
-          <div className="col-md-4 mb-4" key={product.id}>
-            <div className="card">
-              <img src={product.imagen} className="card-img-top" alt={product.nombre_producto} />
-              <div className="card-body">
-                <h5 className="card-title">{product.nombre_producto}</h5>
-                {/*<p className="card-text">{product.descripcion}</p>*/}
-                <p className="card-text">Precio: ${product.precio}</p>
-                <p className="card-text">Stock: {product.stock}</p>
-                <div className="button-group">
-                  <button className="btn btn-primary">Agregar al carrito</button>
-                  <button className="btn btn-secondary" onClick={() => handleProductClick(product)}>
-                    Ver detalles
-                  </button>
+        {paginatedProducts.length === 0 ? (
+          <div className="col-12 text-center">
+            <p>No se encontraron productos que coincidan con los filtros.</p>
+          </div>
+        ) : (
+          paginatedProducts.map(product => (
+            <div className="col-md-4 mb-4" key={product.id}>
+              <div className="card">
+                <img 
+                  src={product.imagen} 
+                  className="card-img-top" 
+                  alt={product.nombre_producto}/> {/*style para acomodar la imagen  style={{height: '200px', objectFit: 'cover'}}*/ }
+                <div className="card-body">
+                  <h5 className="card-title">{product.nombre_producto}</h5>
+                  <p className="card-text">Precio: ${product.precio}</p>
+                  <p className="card-text">Stock: {product.stock}</p>
+                  <div className="button-group">
+                    <button 
+                      className="btn btn-primary"
+                      onClick={() => addToCart(product)}
+                    >
+                      Agregar al carrito
+                    </button>
+                    <button 
+                      className="btn btn-secondary" 
+                      onClick={() => handleProductClick(product)}
+                    >
+                      Ver detalles
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       <div className="pagination-container">
@@ -146,20 +213,34 @@ function Productos() {
       </div>
 
       {/* Ventana flotante */}
+      {/* Modal for product details */}
       {isModalVisible && selectedProduct && (
         <div className="modal-overlay">
           <div className="modal-container">
             <button className="close-button" onClick={handleModalClose}>×</button>
-            <img src={selectedProduct.imagen} alt={selectedProduct.nombre_producto} className="modal-image" />
+            <img 
+              src={selectedProduct.imagen} 
+              alt={selectedProduct.nombre_producto} 
+              className="modal-image" 
+            />
             <h5 className="card-title">{selectedProduct.nombre_producto}</h5>
-            <br /> {/* Salto de línea */}
+            <br />
             <p><strong>Descripción:</strong> {selectedProduct.descripcion || "Sin descripción adicional"}</p>
             <p className="card-text">Precio: ${selectedProduct.precio}</p>
             <p className="card-text">Stock: {selectedProduct.stock}</p> 
-            <button className="btn btn-primary">Agregar al carrito</button>
+            <button 
+              className="btn btn-primary"
+              onClick={() => {
+                addToCart(selectedProduct);
+                handleModalClose();
+              }}
+            >
+              Agregar al carrito
+            </button>
           </div>
         </div>
       )}
+
     </div>
   );
 }
