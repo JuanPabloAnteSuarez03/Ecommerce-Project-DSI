@@ -34,6 +34,14 @@ const menuItems = {
           roles: [1, 2] // Solo Administrador
         },
         {
+          id: 'favorito',
+          title: 'Favoritos',
+          type: 'item',
+          icon: 'feather icon-heart',
+          url: '/favoritos',
+          roles: [1,2] // Solo Administrador
+        },
+        {
           id: 'usuario',
           title: 'Usuario',
           type: 'item',

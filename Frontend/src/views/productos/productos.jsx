@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axiosInstance from '../../utils/axios';
 import { useCart } from '../../contexts/CartContext';
+import { useFavorite } from '../../contexts/FavoriteContext';
 import './productos.css';
 
 function Productos() {
@@ -19,6 +20,8 @@ function Productos() {
   
   // Use the cart context
   const { addToCart } = useCart();
+
+  const { addFavorite } = useFavorite();
 
   const itemsPerPage = 6;
 
@@ -193,6 +196,12 @@ function Productos() {
                       onClick={() => handleProductClick(product)}
                     >
                       Ver detalles
+                    </button>
+                    <button 
+                      className="btn btn-warning"
+                      onClick={() => addFavorite(product.id)}
+                    >
+                      Favorito
                     </button>
                   </div>
                 </div>

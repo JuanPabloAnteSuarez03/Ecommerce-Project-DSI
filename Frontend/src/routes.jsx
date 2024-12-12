@@ -77,6 +77,11 @@ export const routes = [
       },
       {
         exact: 'true',
+        path: '/favoritos',
+        element: lazy(() => import('./views/favoritos/favoritos'))
+      },
+      {
+        exact: 'true',
         path: '/basic/button',
         element: lazy(() => import('./views/ui-elements/BasicButton'))
       },
