@@ -66,16 +66,6 @@ const menuItems = {
           target: true,
           breadcrumbs: false,
           roles: [1, 2] // Disponible para ambos
-        },
-        {
-          id: 'reset-pass',
-          title: 'Restablecer Contraseña',
-          type: 'item',
-          icon: 'feather icon-unlock',
-          url: '/auth/reset-password-1',
-          target: true,
-          breadcrumbs: false,
-          roles: [1, 2] // Disponible para ambos
         }
       ]
     }
