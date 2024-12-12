@@ -8,6 +8,8 @@ from . import views
 router = routers.DefaultRouter()
 router.register(r'categorias', views.CategoriaView, basename='categoria')
 router.register(r'productos', views.ProductoView, basename='producto')
+router.register(r'favoritos', views.ProductoFavoritoView, basename='favoritos')
+
 
 urlpatterns = [ 
     path('api/', include(router.urls)),

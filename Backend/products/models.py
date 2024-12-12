@@ -1,5 +1,8 @@
 # models.py
 from django.db import models
+from django.contrib.auth.models import User
+from django.conf import settings
+
 
 class Categoria(models.Model):
     nombre_categoria = models.CharField(
@@ -53,3 +56,20 @@ class Producto(models.Model):
     class Meta:
         verbose_name = "Producto"
         verbose_name_plural = "Productos"
+
+
+class ProductoFavorito(models.Model):
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # Usar la referencia correcta al modelo de usuario
+        on_delete=models.CASCADE
+    )
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    fecha_agregado = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('usuario', 'producto')  # Evitar duplicados
+        verbose_name = "Producto Favorito"
+        verbose_name_plural = "Productos Favoritos"
+
+    def __str__(self):
+        return f"{self.usuario.username} - {self.producto.nombre_producto}"

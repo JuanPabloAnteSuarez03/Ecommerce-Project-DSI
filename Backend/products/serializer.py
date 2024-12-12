@@ -1,6 +1,6 @@
 # serializers.py
 from rest_framework import serializers
-from .models import Producto, Categoria
+from .models import Producto, Categoria, ProductoFavorito
 from users.models import Usuario
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -45,3 +45,9 @@ class ProductoSerializer(serializers.ModelSerializer):
         help_text="Imagen del producto (opcional)",
         required=False
     )
+
+class ProductoFavoritoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductoFavorito
+        fields = ['id', 'usuario', 'producto', 'fecha_agregado']
+        read_only_fields = ['usuario', 'fecha_agregado']
