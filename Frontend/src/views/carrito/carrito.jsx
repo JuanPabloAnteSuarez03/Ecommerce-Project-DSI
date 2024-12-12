@@ -17,6 +17,7 @@ function Carrito() {
   
   const [product, setProcduct] = useState([]);
   const [cart, setCart] = useState([]);
+  const [loading, setLoading] = useState(true);
   //Mas adelante elimiar esto
   const shippingCost = 10; // Costo fijo de envío en dólares
 
@@ -63,29 +64,33 @@ function Carrito() {
   };
 
   // Función para reducir la cantidad de productos en el carrito
-  const decreaseQuantity = async(productId) => {
-    const item = cart.find((product) => product.producto.id === productId)
-    if(item && item.cantidad > 1){
-      try{
-        const reponse = await axiosInstance.post('/shopping_car/cart/update_quantity', {
+  const decreaseQuantity = async (productId) => {
+    // Encuentra el producto en el carrito
+    const item = cart.find((product) => product.producto.id === productId);
+  
+    // Si el producto existe y su cantidad actual es mayor a 1, reduce la cantidad
+    if (item && item.cantidad > 1) {
+      try {
+        const newQuantity = item.cantidad - 1; // Calcula la nueva cantidad
+        const response = await axiosInstance.post('/shopping_car/cart/update_quantity/', {
           product_id: productId,
-          cantidad: -1,
+          cantidad: newQuantity, // Envía la nueva cantidad calculada
         });
-        setCart(reponse.data.items)
-      } catch (error){
-        console.error('Error al reducir la cantidad del articulo en el carrito', error)
+        setCart(response.data.items); // Actualiza el carrito con la respuesta del servidor
+      } catch (error) {
+        console.error('Error al reducir la cantidad del artículo en el carrito', error);
       }
-    }else {
-      removeFromCart(productId) // Esto es si la cantidad del articulo de carrito llega a 0 entonces elimina el producto
+    } else {
+      console.warn('No se puede reducir la cantidad por debajo de 1. Usa la función remove para eliminar el producto.');
     }
-
   };
+  
 
   // Función para eliminar un producto del carrito
   const removeFromCart = async(productId) => {
     try{
       const reponse = await axiosInstance.post('/shopping_car/cart/remove_item/', {
-        product: productId,
+        product_id: productId,
       });
       setCart(reponse.data.items);
     }catch (error){
@@ -96,7 +101,7 @@ function Carrito() {
   // Función para vaciar el carrito
   const clearCart = async() => {
     try{
-      const response = await axiosInstance.post('/shopping_car/cart/clear');
+      const response = await axiosInstance.post('/shopping_car/cart/clear/');
       setCart(response.data.items)
     }catch(error){
       console.error('Error al vaciar el carrito', error)
@@ -114,42 +119,9 @@ function Carrito() {
 
   return (
     <div className="container mt-5">
-      <h1 className="text-center">Tienda</h1>
-
-      <div className="row">
-        {Array.isArray(product) && product.length === 0 ? (
-          <p>No hay productos disponibles.</p>
-        ) : (
-          Array.isArray(product) &&
-          product.map((product) => (
-            <div key={product.id} className="col-12 col-md-4 mb-4">
-              <div className="card">
-                <img
-                  src={product.imagen} // Campo correcto
-                  className="card-img-top"
-                  alt={product.nombre_producto}
-                />
-                <div className="card-body">
-                  <h5 className="card-title">{product.nombre_producto}</h5>
-                  <p className="card-text">{product.descripcion}</p>
-                  <p className="card-text">Precio: ${product.precio}</p>
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => addToCart(product)}
-                  >
-                    Agregar al carrito
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-
-
-
-      <h2 className="mt-5">Carrito de Compras</h2>
+  
+      {/* Carrito de Compras */}
+      <h1 className="text-center">Carrito de Compras</h1>
       {Array.isArray(cart) && cart.length === 0 ? (
         <p>No hay productos en el carrito.</p>
       ) : (
@@ -203,7 +175,7 @@ function Carrito() {
                 ))}
             </ListGroup>
           </Col>
-
+  
           {/* Resumen del carrito */}
           <Col md={4}>
             <Card className="mt-4">
@@ -244,6 +216,38 @@ function Carrito() {
           </Col>
         </Row>
       )}
+  
+      {/* Productos */}
+      <h2 className="text-center">Productos</h2>
+      <div className="row">
+        {Array.isArray(product) && product.length === 0 ? (
+          <p>No hay productos disponibles.</p>
+        ) : (
+          Array.isArray(product) &&
+          product.map((product) => (
+            <div key={product.id} className="col-12 col-md-4 mb-4">
+              <div className="card">
+                <img
+                  src={product.imagen} // Campo correcto
+                  className="card-img-top"
+                  alt={product.nombre_producto}
+                />
+                <div className="card-body">
+                  <h5 className="card-title">{product.nombre_producto}</h5>
+                  <p className="card-text">{product.descripcion}</p>
+                  <p className="card-text">Precio: ${product.precio}</p>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => addToCart(product)}
+                  >
+                    Agregar al carrito
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
