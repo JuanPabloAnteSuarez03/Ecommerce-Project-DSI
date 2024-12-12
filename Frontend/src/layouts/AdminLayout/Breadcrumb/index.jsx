@@ -1,40 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-
-// react-bootstrap
 import { ListGroup } from 'react-bootstrap';
-
-// project import
-import navigation from '../../../menu-items';
+import { getMenuItems } from '../../../menu-items'; // Import the async function
 import { BASE_TITLE } from '../../../config/constant';
-
-// ==============================|| BREADCRUMB ||============================== //
 
 const Breadcrumb = () => {
   const [main, setMain] = useState([]);
   const [item, setItem] = useState([]);
+  const [menuItems, setMenuItems] = useState({ items: [] });
   const location = useLocation();
+
   useEffect(() => {
-    navigation.items.map((item, index) => {
-      if (item.type && item.type === 'group') {
-        getCollapse(item, index);
+    // Fetch menu items when component mounts
+    const fetchMenuItems = async () => {
+      try {
+        console.log('Fetching menu items...');
+        const fetchedMenuItems = await getMenuItems();
+        setMenuItems(fetchedMenuItems);
+        console.log('Fetched items:', fetchedMenuItems);
+      } catch (error) {
+        console.error('Error fetching menu items:', error);
       }
-      return false;
-    });
-  });
+    };
+
+    fetchMenuItems();
+  }, []);
+
+  useEffect(() => {
+    // Process menu items after they're fetched
+    if (menuItems.items.length > 0) {
+      menuItems.items.forEach((item) => {
+        if (item.type && item.type === 'group') {
+          getCollapse(item);
+        }
+      });
+    }
+  }, [menuItems, location.pathname]);
 
   const getCollapse = (item) => {
     if (item.children) {
-      item.children.filter((collapse) => {
+      item.children.forEach((collapse) => {
         if (collapse.type === 'collapse') {
           getCollapse(collapse);
         } else if (collapse.type && collapse.type === 'item') {
-          if (location.pathname === import.meta.env.VITE_APP_BASE_NAME + collapse.url) {
+          // Adjust path matching to handle base name
+          const fullPath = import.meta.env.VITE_APP_BASE_NAME 
+            ? import.meta.env.VITE_APP_BASE_NAME + collapse.url 
+            : collapse.url;
+
+          if (location.pathname === fullPath) {
             setMain(item);
             setItem(collapse);
           }
         }
-        return false;
       });
     }
   };
