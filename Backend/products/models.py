@@ -47,12 +47,12 @@ class Producto(models.Model):
         on_delete=models.CASCADE,
         help_text="Usuario vendedor del producto"
     )
-    imagen = models.ImageField(
-        upload_to='productos/', 
+    imagen = models.BinaryField( 
         null=True, 
         blank=True,
-        help_text="Imagen del producto (opcional)"
+        help_text="Imagen del producto en formati binario (opcional)"
     )
+ 
 
     def __str__(self):
         return f"{self.nombre_producto} - {self.categoria.nombre_categoria}"

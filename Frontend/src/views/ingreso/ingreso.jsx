@@ -50,9 +50,12 @@ function IngresoProducto() {
     productData.append('vendedor','3'); // Fixed seller ID
   
     if (formData.productImage) {
-      productData.append('imagen', formData.productImage); 
+      console.log("Archivo seleccionado:", formData.productImage.name);
+      productData.append('imagen', formData.productImage);
+    } else {
+        console.log("No se seleccionó archivo.");
     }
-
+  
     
     try {
       

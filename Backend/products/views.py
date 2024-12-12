@@ -2,6 +2,7 @@
 from rest_framework import viewsets
 from .models import Producto, Categoria, ProductoFavorito
 from .serializer import ProductoSerializer, CategorySerializer, ProductoFavoritoSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
 from users.permissions import IsStaffUser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.permissions import DjangoModelPermissions
@@ -60,6 +61,14 @@ class ProductoView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, DjangoModelPermissions]
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
+
+    queryset = Producto.objects.all()
+    parser_classes = (MultiPartParser, FormParser)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
     @swagger_auto_schema(
         operation_description="Obtener una lista de todos los productos.",
