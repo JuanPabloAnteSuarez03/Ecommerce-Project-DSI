@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axiosInstance from '../../utils/axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './usuario.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -8,15 +9,28 @@ import { useNavigate } from 'react-router-dom'; // Importar el hook useNavigate
 const UserProfile = () => {
   const [personalInfo, setPersonalInfo] = useState({
     name: '',
-    email: '',
-    phone: '',
-    address: ''
+    email: ''
   });
-
   const [cards, setCards] = useState([]);
   const [openSection, setOpenSection] = useState(null);
-
   const navigate = useNavigate(); // Inicializar el hook useNavigate
+
+  // Obtener datos del perfil al cargar el componente
+  useEffect(() => {
+    axiosInstance
+      .get('/users/comprador/') // Asegúrate de que la URL es correcta
+      .then((response) => {
+        console.log('Respuesta de la API:', response.data); // Verifica en consola
+        const { user } = response.data; // Accede a la clave "user"
+        setPersonalInfo({
+          name: user.username, // Asignar "username" al campo "name"
+          email: user.email
+        });
+      })
+      .catch((error) => {
+        console.error('Error al obtener los datos del perfil:', error);
+      });
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -38,7 +52,7 @@ const UserProfile = () => {
   };
 
   const redirectToResetPassword = () => {
-    navigate('/auth/reset-password-1'); // Redirigir a la ruta "/reset-password"
+    navigate('/auth/reset-password-1'); // Redirigir a la ruta "/auth/reset-password-1"
   };
 
   return (
@@ -58,19 +72,23 @@ const UserProfile = () => {
             <form>
               <label>
                 Nombre:
-                <input type="text" name="name" value={personalInfo.name} onChange={handleInputChange} />
+                <input
+                  type="text"
+                  name="name"
+                  value={personalInfo.name}
+                  onChange={handleInputChange}
+                  readOnly // Campo solo lectura
+                />
               </label>
               <label>
                 Correo Electrónico:
-                <input type="email" name="email" value={personalInfo.email} onChange={handleInputChange} />
-              </label>
-              <label>
-                Teléfono:
-                <input type="tel" name="phone" value={personalInfo.phone} onChange={handleInputChange} />
-              </label>
-              <label>
-                Dirección:
-                <input type="text" name="address" value={personalInfo.address} onChange={handleInputChange} />
+                <input
+                  type="email"
+                  name="email"
+                  value={personalInfo.email}
+                  onChange={handleInputChange}
+                  readOnly // Campo solo lectura
+                />
               </label>
             </form>
             <p>Aquí se mostrarán los datos de tu cuenta.</p>
