@@ -12,7 +12,17 @@ class Pedido(models.Model):
     def __str__(self):
         estado_str = "Completado" if self.estado else "Pendiente"
         return f"Pedido de {self.usuario.username} - {estado_str} - {self.fecha_pedido}"
-
+    
+    def completar_pedido(self):
+        """Completar el pedido, actualizar ventas totales y reducir stock."""
+        if not self.estado:  # Solo procesar si no ha sido completado antes
+            for detalle in self.detalles.all():
+                producto = detalle.producto
+                producto.ventas += detalle.cantidad  # Actualizar las ventas totales
+                producto.stock -= detalle.cantidad  # Reducir el stock
+                producto.save()
+            self.estado = True
+            self.save()
 
 
 class DetallePedido(models.Model):
