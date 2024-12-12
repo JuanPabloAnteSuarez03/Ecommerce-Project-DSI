@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-
-// react-bootstrap
-import { ListGroup, Dropdown, Card, Modal, Button, Form } from 'react-bootstrap';
-
-// third party
+import { Link, useNavigate } from 'react-router-dom';
+import { ListGroup, Dropdown, Card } from 'react-bootstrap';
 import PerfectScrollbar from 'react-perfect-scrollbar';
-
-// project import
 import ChatList from './ChatList';
+import axiosInstance from '../../../../utils/axios';
 
 // assets
 import avatar1 from '../../../../assets/images/user/avatar-1.jpg';
@@ -16,52 +11,64 @@ import avatar2 from '../../../../assets/images/user/avatar-2.jpg';
 import avatar3 from '../../../../assets/images/user/avatar-3.jpg';
 import avatar4 from '../../../../assets/images/user/avatar-4.jpg';
 
-
-// ==============================|| NAV RIGHT ||============================== //
-
 const NavRight = () => {
   const [listOpen, setListOpen] = useState(false);
-
-    // Estado para manejar el modal de configuraciones
-  const [showSettings, setShowSettings] = useState(false);
-  const [settings, setSettings] = useState({
-    notifications: true,
-    darkMode: false,
-    publicProfile: false,
-  });
-  
-  const toggleSettingsModal = () => {
-    setShowSettings(!showSettings);
-  };
-  
-  const handleSettingsChange = (event) => {
-    const { name, checked } = event.target;
-    setSettings({
-      ...settings,
-      [name]: checked,
-    });
-  };
+  const navigate = useNavigate();
 
   const notiData = [
     {
       name: 'Joseph William',
       image: avatar2,
       details: 'Purchase New Theme and make payment',
-      activity: '30 min'
+      activity: '30 min',
     },
     {
       name: 'Sara Soudein',
       image: avatar3,
       details: 'currently login',
-      activity: '30 min'
+      activity: '30 min',
     },
     {
       name: 'Suzen',
       image: avatar4,
       details: 'Purchase New Theme and make payment',
-      activity: 'yesterday'
-    }
+      activity: 'yesterday',
+    },
   ];
+
+  const handleLogout = async () => {
+    try {
+      // Get the access token from localStorage
+      const token = localStorage.getItem('accessToken');
+  
+      if (!token) {
+        // If no token is found, just clear the localStorage and redirect
+        localStorage.clear();
+        navigate('/auth/login-1');
+        return;
+      }
+  
+      // Send POST request to logout endpoint with Authorization header
+      await axiosInstance.post('/users/logout/', {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+  
+      // Clear tokens from localStorage after successful logout
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+  
+      // Redirect to the login page
+      navigate('/auth/login-1');
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Handle logout failure (e.g., show an error message)
+      localStorage.clear();  // Optionally clear tokens if logout fails
+      navigate('/auth/login-1');  // Redirect user to login
+    }
+  };
+  
 
   return (
     <React.Fragment>
@@ -112,28 +119,26 @@ const NavRight = () => {
                   <ListGroup.Item as="li" bsPrefix=" " className="n-title">
                     <p className="m-b-0">EARLIER</p>
                   </ListGroup.Item>
-                  {notiData.map((data, index) => {
-                    return (
-                      <ListGroup.Item key={index} as="li" bsPrefix=" " className="notification">
-                        <Card
-                          className="d-flex align-items-center shadow-none mb-0 p-0"
-                          style={{ flexDirection: 'row', backgroundColor: 'unset' }}
-                        >
-                          <img className="img-radius" src={data.image} alt="Generic placeholder" />
-                          <Card.Body className="p-0">
-                            <p>
-                              <strong>{data.name}</strong>
-                              <span className="n-time text-muted">
-                                <i className="icon feather icon-clock me-2" />
-                                {data.activity}
-                              </span>
-                            </p>
-                            <p>{data.details}</p>
-                          </Card.Body>
-                        </Card>
-                      </ListGroup.Item>
-                    );
-                  })}
+                  {notiData.map((data, index) => (
+                    <ListGroup.Item key={index} as="li" bsPrefix=" " className="notification">
+                      <Card
+                        className="d-flex align-items-center shadow-none mb-0 p-0"
+                        style={{ flexDirection: 'row', backgroundColor: 'unset' }}
+                      >
+                        <img className="img-radius" src={data.image} alt="Generic placeholder" />
+                        <Card.Body className="p-0">
+                          <p>
+                            <strong>{data.name}</strong>
+                            <span className="n-time text-muted">
+                              <i className="icon feather icon-clock me-2" />
+                              {data.activity}
+                            </span>
+                          </p>
+                          <p>{data.details}</p>
+                        </Card.Body>
+                      </Card>
+                    </ListGroup.Item>
+                  ))}
                 </ListGroup>
               </PerfectScrollbar>
               <div className="noti-footer">
@@ -161,15 +166,15 @@ const NavRight = () => {
               <div className="pro-head">
                 <img src={avatar1} className="img-radius" alt="User Profile" />
                 <span>John Doe</span>
-                <Link to="#" className="dud-logout" title="Logout">
+                <Link to="#" onClick={handleLogout} className="dud-logout" title="Logout">
                   <i className="feather icon-log-out" />
                 </Link>
               </div>
               <ListGroup as="ul" bsPrefix=" " variant="flush" className="pro-body">
                 <ListGroup.Item as="li" bsPrefix=" ">
-                  <Dropdown.Item onClick={toggleSettingsModal}>
-                    <i className="feather icon-settings" /> Settings
-                  </Dropdown.Item>
+                  <Link to="#" className="dropdown-item">
+                    <i className="feather icon-settings" /> Configuraciones
+                  </Link>
                 </ListGroup.Item>
                 <ListGroup.Item as="li" bsPrefix=" ">
                   <Link to="#" className="dropdown-item">
@@ -177,7 +182,7 @@ const NavRight = () => {
                   </Link>
                 </ListGroup.Item>
                 <ListGroup.Item as="li" bsPrefix=" ">
-                  <Link to="#" className="dropdown-item">
+                  <Link to="#" onClick={handleLogout} className="dropdown-item">
                     <i className="feather icon-log-out" /> Logout
                   </Link>
                 </ListGroup.Item>
@@ -186,43 +191,6 @@ const NavRight = () => {
           </Dropdown>
         </ListGroup.Item>
       </ListGroup>
-
-            {/* Modal de Configuraciones */}
-      <Modal show={showSettings} onHide={toggleSettingsModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>User Settings</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Check
-              type="checkbox"
-              label="Translate To English"
-              name="translate"
-              checked={settings.translate}
-              onChange={handleSettingsChange}
-            />
-            <Form.Check
-              type="checkbox"
-              label="Dark Mode"
-              name="darkMode"
-              checked={settings.darkMode}
-              onChange={handleSettingsChange}
-            />
-            <Form.Check
-              type="checkbox"
-              label="Public Profile"
-              name="publicProfile"
-              checked={settings.publicProfile}
-              onChange={handleSettingsChange}
-            />
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={toggleSettingsModal}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
       <ChatList listOpen={listOpen} closed={() => setListOpen(false)} />
     </React.Fragment>
   );
