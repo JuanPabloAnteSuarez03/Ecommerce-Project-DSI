@@ -1,11 +1,19 @@
 from rest_framework import serializers
 from products.models import Producto
 from .models import Carrito, CarritoItem
+import base64
 
 class ProductSerializer(serializers.ModelSerializer):
+    imagen = serializers.SerializerMethodField()
     class Meta:
         model = Producto
         fields = ['id', 'nombre_producto', 'precio', 'imagen']
+
+    def get_imagen(self, obj):
+        if obj.imagen:
+            # Convierte la imagen a base64
+            return f"data:image/png;base64,{base64.b64encode(obj.imagen).decode('utf-8')}"
+        return None
 
 
 class CarritoItemSerializer(serializers.ModelSerializer):
