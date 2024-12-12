@@ -39,7 +39,7 @@ const menuItems = {
           type: 'item',
           icon: 'feather icon-user',
           url: '/usuario',
-          roles: [1] // Solo Administrador
+          roles: [1,2] // Solo Administrador
         },
         {
           id: 'ingreso',
@@ -47,25 +47,7 @@ const menuItems = {
           type: 'item',
           icon: 'feather icon-log-in',
           url: '/ingreso',
-          roles: [1, 2] // Administrador y Comprador
-        }
-      ]
-    },
-    {
-      id: 'auth',
-      title: 'Authentication',
-      type: 'group',
-      icon: 'icon-pages',
-      children: [
-        {
-          id: 'login',
-          title: 'Login',
-          type: 'item',
-          icon: 'feather icon-log-in',
-          url: '/auth/login-1',
-          target: true,
-          breadcrumbs: false,
-          roles: [1, 2] // Disponible para ambos
+          roles: [1] // Administrador y Comprador
         }
       ]
     }
