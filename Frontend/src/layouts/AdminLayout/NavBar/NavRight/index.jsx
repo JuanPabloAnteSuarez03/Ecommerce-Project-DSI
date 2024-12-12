@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 // react-bootstrap
-import { ListGroup, Dropdown, Card } from 'react-bootstrap';
+import { ListGroup, Dropdown, Card, Modal, Button, Form } from 'react-bootstrap';
 
 // third party
 import PerfectScrollbar from 'react-perfect-scrollbar';
@@ -16,10 +16,31 @@ import avatar2 from '../../../../assets/images/user/avatar-2.jpg';
 import avatar3 from '../../../../assets/images/user/avatar-3.jpg';
 import avatar4 from '../../../../assets/images/user/avatar-4.jpg';
 
+
 // ==============================|| NAV RIGHT ||============================== //
 
 const NavRight = () => {
   const [listOpen, setListOpen] = useState(false);
+
+    // Estado para manejar el modal de configuraciones
+  const [showSettings, setShowSettings] = useState(false);
+  const [settings, setSettings] = useState({
+    notifications: true,
+    darkMode: false,
+    publicProfile: false,
+  });
+  
+  const toggleSettingsModal = () => {
+    setShowSettings(!showSettings);
+  };
+  
+  const handleSettingsChange = (event) => {
+    const { name, checked } = event.target;
+    setSettings({
+      ...settings,
+      [name]: checked,
+    });
+  };
 
   const notiData = [
     {
@@ -146,9 +167,9 @@ const NavRight = () => {
               </div>
               <ListGroup as="ul" bsPrefix=" " variant="flush" className="pro-body">
                 <ListGroup.Item as="li" bsPrefix=" ">
-                  <Link to="#" className="dropdown-item">
+                  <Dropdown.Item onClick={toggleSettingsModal}>
                     <i className="feather icon-settings" /> Settings
-                  </Link>
+                  </Dropdown.Item>
                 </ListGroup.Item>
                 <ListGroup.Item as="li" bsPrefix=" ">
                   <Link to="#" className="dropdown-item">
@@ -175,6 +196,43 @@ const NavRight = () => {
           </Dropdown>
         </ListGroup.Item>
       </ListGroup>
+
+            {/* Modal de Configuraciones */}
+      <Modal show={showSettings} onHide={toggleSettingsModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>User Settings</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Check
+              type="checkbox"
+              label="Translate To English"
+              name="translate"
+              checked={settings.translate}
+              onChange={handleSettingsChange}
+            />
+            <Form.Check
+              type="checkbox"
+              label="Dark Mode"
+              name="darkMode"
+              checked={settings.darkMode}
+              onChange={handleSettingsChange}
+            />
+            <Form.Check
+              type="checkbox"
+              label="Public Profile"
+              name="publicProfile"
+              checked={settings.publicProfile}
+              onChange={handleSettingsChange}
+            />
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={toggleSettingsModal}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
       <ChatList listOpen={listOpen} closed={() => setListOpen(false)} />
     </React.Fragment>
   );
