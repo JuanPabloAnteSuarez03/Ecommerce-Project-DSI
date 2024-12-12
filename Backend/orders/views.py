@@ -186,3 +186,27 @@ class FacturaEmailAPIView(APIView):
                 {'message': f'Ocurrió un error al enviar el email: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class MarcarPedidoCompletadoView(APIView):
+    """
+    Vista para marcar un pedido como completado.
+    """
+
+    def patch(self, request, pedido_id):
+        try:
+            # Buscar el pedido por ID
+            pedido = Pedido.objects.get(id=pedido_id)
+            
+            # Marcar el pedido como completado
+            pedido.completar_pedido()
+            
+            return Response(
+                {"status": "success", "message": "Pedido completado exitosamente."},
+                status=status.HTTP_200_OK
+            )
+        except Pedido.DoesNotExist:
+            return Response(
+                {"status": "error", "message": "Pedido no encontrado."},
+                status=status.HTTP_404_NOT_FOUND
+            )
