@@ -14,6 +14,7 @@ export const CartProvider = ({ children }) => {
       try {
         const response = await axiosInstance.get('/shopping_car/cart/');
         setCart(response.data.items);
+        console.log('Carrito actualizado:', response.data.items);
       } catch (error) {
         console.error('Error al obtener el carrito', error);
       }
