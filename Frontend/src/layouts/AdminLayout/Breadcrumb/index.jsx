@@ -1,93 +1,87 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-
-// react-bootstrap
 import { ListGroup } from 'react-bootstrap';
-
-// project import
-import navigation from '../../../menu-items';
 import { BASE_TITLE } from '../../../config/constant';
 
-// ==============================|| BREADCRUMB ||============================== //
-
-const Breadcrumb = () => {
-  const [main, setMain] = useState([]);
-  const [item, setItem] = useState([]);
+const Breadcrumb = ({ menuItems }) => {
+  const [main, setMain] = useState(null);
+  const [item, setItem] = useState(null);
   const location = useLocation();
-  useEffect(() => {
-    navigation.items.map((item, index) => {
-      if (item.type && item.type === 'group') {
-        getCollapse(item, index);
-      }
-      return false;
-    });
-  });
 
-  const getCollapse = (item) => {
-    if (item.children) {
-      item.children.filter((collapse) => {
-        if (collapse.type === 'collapse') {
-          getCollapse(collapse);
-        } else if (collapse.type && collapse.type === 'item') {
-          if (location.pathname === import.meta.env.VITE_APP_BASE_NAME + collapse.url) {
-            setMain(item);
-            setItem(collapse);
-          }
+  useEffect(() => {
+    // Process menu items after they are passed in
+    if (menuItems && menuItems.items.length > 0) {
+      menuItems.items.forEach((group) => {
+        if (group.type === 'group' && group.children) {
+          processGroup(group);
         }
-        return false;
       });
     }
+  }, [menuItems, location.pathname]);
+
+  const processGroup = (group) => {
+    group.children.forEach((child) => {
+      if (child.type === 'collapse' && child.children) {
+        processGroup(child);
+      } else if (child.type === 'item') {
+        const fullPath = import.meta.env.VITE_APP_BASE_NAME
+          ? import.meta.env.VITE_APP_BASE_NAME + child.url
+          : child.url;
+
+        if (location.pathname === fullPath) {
+          setMain(group);
+          setItem(child);
+        }
+      }
+    });
   };
 
-  let mainContent, itemContent;
-  let breadcrumbContent = '';
-  let title = '';
+  const renderBreadcrumbContent = () => {
+    if (!item || item.breadcrumbs === false) return null;
 
-  if (main && main.type === 'collapse') {
-    mainContent = (
+    const mainContent = main && main.type === 'collapse' && (
       <ListGroup.Item as="li" bsPrefix=" " className="breadcrumb-item">
         <Link to="#">{main.title}</Link>
       </ListGroup.Item>
     );
-  }
 
-  if (item && item.type === 'item') {
-    title = item.title;
-    itemContent = (
+    const itemContent = (
       <ListGroup.Item as="li" bsPrefix=" " className="breadcrumb-item">
-        <Link to="#">{title}</Link>
+        <Link to="#">{item.title}</Link>
       </ListGroup.Item>
     );
 
-    if (item.breadcrumbs !== false) {
-      breadcrumbContent = (
-        <div className="page-header">
-          <div className="page-block">
-            <div className="row align-items-center">
-              <div className="col-md-12">
-                <div className="page-header-title">
-                  <h5 className="m-b-10">{title}</h5>
-                </div>
-                <ListGroup as="ul" bsPrefix=" " className="breadcrumb">
-                  <ListGroup.Item as="li" bsPrefix=" " className="breadcrumb-item">
-                    <Link to="/">
-                      <i className="feather icon-home" />
-                    </Link>
-                  </ListGroup.Item>
-                  {mainContent}
-                  {itemContent}
-                </ListGroup>
+    return (
+      <div className="page-header">
+        <div className="page-block">
+          <div className="row align-items-center">
+            <div className="col-md-12">
+              <div className="page-header-title">
+                <h5 className="m-b-10">{item.title}</h5>
               </div>
+              <ListGroup as="ul" bsPrefix=" " className="breadcrumb">
+                <ListGroup.Item as="li" bsPrefix=" " className="breadcrumb-item">
+                  <Link to="/">
+                    <i className="feather icon-home" />
+                  </Link>
+                </ListGroup.Item>
+                {mainContent}
+                {itemContent}
+              </ListGroup>
             </div>
           </div>
         </div>
-      );
+      </div>
+    );
+  };
+
+  useEffect(() => {
+    if (item) {
+      document.title = item.title + BASE_TITLE;
     }
+  }, [item]);
 
-    document.title = title + BASE_TITLE;
-  }
-
-  return <React.Fragment>{breadcrumbContent}</React.Fragment>;
+  return <React.Fragment>{renderBreadcrumbContent()}</React.Fragment>;
 };
 
 export default Breadcrumb;

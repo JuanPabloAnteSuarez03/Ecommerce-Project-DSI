@@ -1,0 +1,7 @@
+.img-responsive {
+  width: 180px; /* Fija el ancho deseado */
+  height: 60px; /* Fija la altura deseada */
+  object-fit: contain; /* Ajusta cómo se muestra la imagen dentro de las dimensiones */
+  display: block;
+  margin: 0 auto;
+}
