@@ -1,49 +1,78 @@
-from django.conf import settings
-from django.http import JsonResponse
-from rest_framework.views import APIView
+from django.shortcuts import render
 import stripe
-import requests
+from django.conf import settings
+from rest_framework.views import APIView
+from rest_framework import response
+from rest_framework import status
+from shopping_car.models import Carrito
+from rest_framework.permissions import IsAuthenticated
+
+# Create your views here.
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
+class CreateCheckoutSessionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            user = request.user  # Asegurar de que el usuario esté autenticado
+            carrito = Carrito.objects.filter(usuario=user).first()
+
+            if not carrito or not carrito.items.exists():
+                return response.Response({'error': 'El carrito está vacío'}, status=status.HTTP_400_BAD_REQUEST)
+
+            line_items = []
+            for item in carrito.items.all():
+                product = item.producto
+                line_items.append({
+                    'price_data': {
+                        'currency': 'usd',
+                        'unit_amount': int(product.precio * 100),  # Asegúrate de que price esté en dólares
+                        'product_data': {
+                            'name': product.nombre_producto,
+                        },
+                    },
+                    'quantity': item.cantidad,
+                })
+
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=line_items,
+                mode='payment',
+                success_url='https://ecommerce-project-frontend-rhra.onrender.com/productos',
+                cancel_url='https://ecommerce-project-frontend-rhra.onrender.com/carrito',
+            )
+
+            return response.Response({'id': checkout_session.id})
+        except Exception as e:
+            return response.Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        pass
+        
+
 class StripeWebhookView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         payload = request.body
-        sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
-        endpoint_secret = settings.STRIPE_WEBHOOK_SECRET  # Configura esta clave en tus settings
+        sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+        event = None
 
         try:
             event = stripe.Webhook.construct_event(
-                payload, sig_header, endpoint_secret
+                payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
             )
         except ValueError as e:
-            # Invalid payload
-            return JsonResponse({'error': 'Invalid payload'}, status=400)
+            return response.Response(status=status.HTTP_400_BAD_REQUEST)
         except stripe.error.SignatureVerificationError as e:
-            # Invalid signature
-            return JsonResponse({'error': 'Invalid signature'}, status=400)
+            return response.Response(status=status.HTTP_400_BAD_REQUEST)
 
-        # Maneja el evento específico
         if event['type'] == 'checkout.session.completed':
             session = event['data']['object']
 
-            # Extraer información necesaria (por ejemplo, el carrito o productos)
-            line_items = stripe.checkout.Session.list_line_items(session['id'])
+            user_id = session.get('metadata', {}).get('user_id')  
 
-            # Crear una orden en tu API
-            for item in line_items['data']:
-                producto_id = item['price']['product']  # Debes mapear tu producto en Stripe con tu base de datos
-                cantidad = item['quantity']
+            if user_id:
+                Carrito.objects.filter(usuario_id=user_id).delete()
 
-                # Llama a tu API de órdenes
-                response = requests.post(
-                    'https://ecommerce-backend-zm43.onrender.com/orders/api/detallePedidos/',  # URL de tu API
-                    json={
-                        'producto': producto_id,
-                        'cantidad': cantidad
-                    }
-                )
-                if response.status_code != 201:
-                    return JsonResponse({'error': 'Error creando la orden'}, status=400)
-
-        return JsonResponse({'status': 'success'}, status=200)
+        return response.Response(status=status.HTTP_200_OK)
