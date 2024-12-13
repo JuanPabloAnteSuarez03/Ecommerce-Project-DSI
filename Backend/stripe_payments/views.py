@@ -90,7 +90,7 @@ class StripeWebhookView(APIView):
                 refresh = RefreshToken.for_user(user)
                 access_token = str(refresh.access_token)
 
-                # Procesa los productos del carrito
+                # Procesa los productos del carrito y construye el JSON del pedido
                 line_items = stripe.checkout.Session.list_line_items(session['id'])
                 detalles = []
                 for item in line_items['data']:
@@ -101,29 +101,31 @@ class StripeWebhookView(APIView):
                     cantidad = item['quantity']
 
                     detalles.append({
-                        'producto': producto_id,  # Mapea correctamente al ID de tu base de datos
-                        'cantidad': cantidad,
+                        "producto": producto_id,
+                        "cantidad": cantidad
                     })
+
+                pedido_data = {
+                    "usuario": user_id,
+                    "estado": True,  # Cambia según corresponda
+                    "detalles": detalles
+                }
 
                 # Realiza la solicitud autenticada al endpoint de pedidos
                 response = requests.post(
                     'https://ecommerce-backend-zm43.onrender.com/orders/api/pedidos/',
-                    json={
-                        'usuario': user_id,
-                        'estado': True,  # O el valor que represente un pedido completado
-                        'detalles': detalles,
-                    },
+                    json=pedido_data,
                     headers={
-                        'Authorization': f'Bearer {access_token}', 
+                        'Authorization': f'Bearer {access_token}',
                     }
                 )
 
                 if response.status_code != 201:
-                    logger.error(f"Error creando pedido: {response.text}")
+                    logger.error(f"Error creando el pedido: {response.text}")
                     return JsonResponse({'error': 'Error creando el pedido'}, status=400)
 
             except Exception as e:
-                logger.error(f"Error procesando el webhook: {e}")
+                logger.error(f"Error procesando line items: {e}")
                 return JsonResponse({'error': str(e)}, status=500)
 
         return JsonResponse({'status': 'success'}, status=200)
