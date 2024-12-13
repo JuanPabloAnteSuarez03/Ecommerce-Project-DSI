@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useContext } from 'react';
+import { Row, Col, Card, Button, Form } from 'react-bootstrap';
+import { CategoryContext } from '../../contexts/CategoryContext';
 
 // react-bootstrap
-import { Row, Col, Card, Table, ListGroup } from 'react-bootstrap';
+import { Table, ListGroup } from 'react-bootstrap';
 
 // third party
 import Chart from 'react-apexcharts';
@@ -21,13 +23,27 @@ import imgGrid1 from '../../assets/images/gallery-grid/img-grd-gal-1.jpg';
 import imgGrid2 from '../../assets/images/gallery-grid/img-grd-gal-2.jpg';
 import imgGrid3 from '../../assets/images/gallery-grid/img-grd-gal-3.jpg';
 
-// ==============================|| DASHBOARD ANALYTICS ||============================== //
-
 const DashAnalytics = () => {
+  const [categoryInput, setCategoryInput] = useState('');
+  const { createCategory, categories } = useContext(CategoryContext);
+
+  // Maneja el cambio del campo de texto
+  const handleCategoryChange = (e) => {
+    setCategoryInput(e.target.value);
+  };
+
+  // Enviar la nueva categoría
+  const handleCategorySubmit = () => {
+    if (categoryInput.trim()) {
+      createCategory(categoryInput);
+      setCategoryInput('');
+    }
+  };
+
   return (
     <React.Fragment>
       <Row>
-        {/* order cards */}
+        {/* Order Cards */}
         <Col md={6} xl={3}>
           <OrderCard
             params={{
@@ -77,6 +93,7 @@ const DashAnalytics = () => {
           />
         </Col>
 
+        {/* Charts */}
         <Col md={12} xl={6}>
           <Card>
             <Card.Header>
@@ -162,10 +179,48 @@ const DashAnalytics = () => {
           </Row>
         </Col>
 
-        
-        
+        {/* Agregar Nueva Categoría */}
+        <Col md={12}>
+          <Card>
+            <Card.Header>
+              <h5>Agregar Nueva Categoría</h5>
+            </Card.Header>
+            <Card.Body>
+              <Form.Group className="mb-3">
+                <Form.Label>Nombre de la categoría</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Ingresa el nombre de la categoría"
+                  value={categoryInput}
+                  onChange={handleCategoryChange}
+                />
+              </Form.Group>
+              <Button variant="primary" onClick={handleCategorySubmit}>
+                Agregar Categoría
+              </Button>
+            </Card.Body>
+          </Card>
+        </Col>
 
-        
+        {/* Lista de Categorías */}
+        <Col md={12}>
+          <Card>
+            <Card.Header>
+              <h5>Lista de Categorías</h5>
+            </Card.Header>
+            <Card.Body>
+              {categories.length > 0 ? (
+                <ul>
+                  {categories.map((category) => (
+                    <li key={category.id}>{category.nombre_categoria}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No hay categorías disponibles.</p>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
       </Row>
     </React.Fragment>
   );
