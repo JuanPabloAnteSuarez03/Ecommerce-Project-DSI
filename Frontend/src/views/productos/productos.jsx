@@ -120,17 +120,32 @@ function Productos() {
     <div className="container mt-5">
       <h1 className="text-center">Productos</h1>
 
-      <div className="row mb-4">
-        <div className="col-md-3">
+      {/* Barra de búsqueda */}
+
+      <div className="row justify-content-center mb-3">
+
+        <div className="col-md-8">
+
           <input
+
             type="text"
-            className="form-control"
-            placeholder="Buscar por nombre"
+
+            className="form-control text-center"
+
+            placeholder="Buscar productos..."
             value={search}
             onChange={handleSearch}
           />
         </div>
-        <div className="col-md-3">
+        </div>
+
+
+
+{/* Filtros */}
+
+<div className="row justify-content-center mb-4">
+
+  <div className="col-auto">
           <select className="form-select" onChange={handleCategoryChange} value={category}>
             <option value="">Filtrar por categoría</option>
             <option value="1">Electrodomésticos</option>
@@ -138,13 +153,13 @@ function Productos() {
             <option value="3">Libros</option>
           </select>
         </div>
-        <div className="col-md-3">
+        <div className="col-auto">
           <select className="form-select" onChange={handleSortChange} value={sortPrice}>
             <option value="lowToHigh">Precio: Bajo a Alto</option>
             <option value="highToLow">Precio: Alto a Bajo</option>
           </select>
         </div>
-        <div className="col-md-3">
+        <div className="col-auto">
           <input
             type="number"
             className="form-control"
@@ -153,7 +168,7 @@ function Productos() {
             onChange={handleMinPriceChange}
           />
         </div>
-        <div className="col-md-3">
+        <div className="col-auto">
           <input
             type="number"
             className="form-control"
