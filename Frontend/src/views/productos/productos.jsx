@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext  } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axiosInstance from '../../utils/axios';
 import { useCart } from '../../contexts/CartContext';
 import { useFavorite } from '../../contexts/FavoriteContext'; // Importa el contexto de favoritos
+import { CategoryContext } from '../../contexts/CategoryContext';
 import './productos.css';
 
 function Productos() {
@@ -21,6 +22,8 @@ function Productos() {
   // Use the cart context
   const { addToCart } = useCart();
   const { addFavorite, removeFavorite, favorites } = useFavorite(); // Traemos addFavorite y removeFavorite del contexto de favoritos
+
+  const { categories, createCategory } = useContext(CategoryContext);
 
   const itemsPerPage = 6;
 
@@ -148,9 +151,11 @@ function Productos() {
   <div className="col-auto">
           <select className="form-select" onChange={handleCategoryChange} value={category}>
             <option value="">Filtrar por categoría</option>
-            <option value="1">Electrodomésticos</option>
-            <option value="2">Útiles</option>
-            <option value="3">Libros</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.nombre_categoria}
+                  </option>
+                ))}
           </select>
         </div>
         <div className="col-auto">
