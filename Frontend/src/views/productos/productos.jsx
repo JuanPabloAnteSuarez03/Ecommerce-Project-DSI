@@ -25,6 +25,7 @@ function Productos() {
 
   const itemsPerPage = 6;
 
+  
   useEffect(() => {
     const fetchProductos = async () => {
       try {
