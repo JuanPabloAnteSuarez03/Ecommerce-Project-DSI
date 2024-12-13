@@ -22,9 +22,11 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
+from django.http import HttpResponseRedirect
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi 
-import logging 
+import logging
+
 
 
 
@@ -574,12 +576,6 @@ class activate(APIView):
         if user is not None and account_activation_token.check_token(user, token):
             user.is_active = True
             user.save()
-            return Response(
-                {'message': 'Cuenta activada exitosamente'},
-                status=status.HTTP_200_OK
-            )
+            return  HttpResponseRedirect('https://ecommerce-project-frontend-rhra.onrender.com/auth/login-1')
         else:
-            return Response(
-                {'message': 'El enlace de activación es inválido'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+             return HttpResponseRedirect("https://ecommerce-project-frontend-rhra.onrender.com/auth/error")

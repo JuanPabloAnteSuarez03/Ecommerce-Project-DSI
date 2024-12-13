@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useFavorite } from '../../contexts/FavoriteContext';
+import { useCart } from '../../contexts/CartContext';
 import axiosInstance from '../../utils/axios'; // Importa la instancia de Axios para realizar solicitudes
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Row, Col, Card, Button } from 'react-bootstrap';
@@ -7,6 +8,7 @@ import { Row, Col, Card, Button } from 'react-bootstrap';
 function Favoritos() {
   const { favorites, removeFavorite } = useFavorite();
   const [productsDetails, setProductsDetails] = useState([]);
+  const { addToCart } = useCart();
 
   // Fetch product details for all favorite products
   useEffect(() => {
@@ -47,14 +49,22 @@ function Favoritos() {
                 <Card.Body>
                   <Card.Title>{product.nombre_producto || 'Producto sin nombre'}</Card.Title>
                   <Card.Text>Precio: ${product.precio || '0.00'}</Card.Text>
-                  <Button
-                    variant="danger"
-                    onClick={() =>
-                      removeFavorite(favorites.find((fav) => fav.producto === product.id).id)
-                    }
-                  >
-                    Eliminar de Favoritos
-                  </Button>
+                  <div className="button-group">
+                    <Button
+                            variant="primary"
+                            onClick={() => addToCart(product)} // Agregar al carrito
+                        >
+                            Agregar al carrito
+                    </Button>
+                    <Button
+                        variant="danger"
+                        onClick={() =>
+                        removeFavorite(favorites.find((fav) => fav.producto === product.id).id)
+                        }
+                    >
+                        Eliminar de Favoritos
+                    </Button>
+                </div>
                 </Card.Body>
               </Card>
             </Col>
