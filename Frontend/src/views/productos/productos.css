@@ -33,24 +33,23 @@
 }
 
 .modal-image {
-  display: block; /* Asegura que sea tratada como un bloque para centrarla */
-  margin: 0 auto; /* Centra horizontalmente la imagen */
-  max-width: 100%; /* Evita que la imagen se desborde del contenedor */
-  height: auto; /* Mantiene la proporción de la imagen */
-  max-height: 200px; /* Define un máximo de altura predeterminada */
-  object-fit: contain; /* Ajusta la imagen para que encaje sin distorsión */
-  border-radius: 10px; /* Opcional: agrega bordes redondeados */
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 10px;
 }
-
   
 .button-group {
   display: flex;
-  justify-content: space-between; /* Espacio entre botones */
-  gap: 10px; /* Separación adicional */
+  justify-content: space-between;
+  gap: 10px;
 }
   
 .button-container {
-  margin-bottom: 10px; /* Espacio entre botones cuando están en líneas diferentes */
+  margin-bottom: 10px;
 }
 
 .favorite-icon {
@@ -62,32 +61,32 @@
 }
   
 .favorite-icon i {
-  color: white; /* Transparent fill */
-  border: none; /* Remove border */
-  font-family: Arial, sans-serif; /* Use a font that supports the outlined heart */
+  color: white;
+  border: none;
+  font-family: Arial, sans-serif;
   font-size: 24px;
   transition: all 0.3s ease;
-  text-shadow: 0 0 0 black; /* Create an outline effect */
-  -webkit-text-stroke: 1px black; /* Alternate method for outline */
+  text-shadow: 0 0 0 black;
+  -webkit-text-stroke: 1px black;
   cursor: pointer;
 }
   
 .favorite-icon i::before {
-  content: '❤'; /* Outlined heart character */
+  content: '❤';
 }
   
 .favorite-icon i.favorited {
-  color: red; /* Red fill when favorited */
-  text-shadow: none; /* Remove outline */
-  -webkit-text-stroke: 0; /* Remove stroke */
+  color: red;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
 }
   
 .favorite-icon i.favorited::before {
-  content: '❤'; /* Filled heart character */
+  content: '❤';
 }
   
 .favorite-icon:hover i {
-  color: #960909; /* Darker color on hover when not favorited */
+  color: #960909;
   text-shadow: 0 0 0 #960909;
   -webkit-text-stroke: 1px #960909;
 }
@@ -99,4 +98,123 @@
 .card-img-top {
   object-fit: cover;
   height: 200px;
+}
+
+/* Updated styles for all filter inputs with thicker borders */
+.container input[type="text"].form-control,
+.container input[type="number"].form-control,
+.container .form-select {
+  border-radius: 25px;
+  border-color: #57A5FF;
+  border-width: 2px;
+  box-shadow: 0 0 5px rgba(87, 165, 255, 0.5);
+  transition: all 0.3s ease;
+  text-align: center; /* Center the text */
+}
+
+.container input[type="text"].form-control:hover,
+.container input[type="text"].form-control:focus,
+.container input[type="number"].form-control:hover,
+.container input[type="number"].form-control:focus,
+.container .form-select:hover,
+.container .form-select:focus {
+  border-color: #326094;
+  border-width: 2px;
+  box-shadow: 0 0 10px rgba(50, 96, 148, 0.7);
+  outline: none;
+}
+
+/* Additional styling for select elements */
+.container .form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M1 4l5 5 5-5' fill='none' stroke='%2357A5FF' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  padding-right: 2rem;
+}
+
+/* New styles for buttons */
+.button-group .btn-primary,
+.button-group .btn-secondary,
+.modal-container .btn-primary {
+  border-radius: 25px;
+  border: 2px solid #57A5FF;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 5px rgba(87, 165, 255, 0.5);
+}
+
+.button-group .btn-primary:hover,
+.button-group .btn-primary:focus,
+.button-group .btn-secondary:hover,
+.button-group .btn-secondary:focus,
+.modal-container .btn-primary:hover,
+.modal-container .btn-primary:focus {
+  border-color: #326094;
+  box-shadow: 0 0 10px rgba(50, 96, 148, 0.7);
+  transform: scale(1.05);
+}
+
+/* Specific color adjustments */
+.button-group .btn-primary {
+  background-color: #57A5FF;
+}
+
+.button-group .btn-secondary {
+  background-color: #57A5FF;
+  color: white;
+}
+
+.button-group .btn-primary:hover,
+.button-group .btn-secondary:hover {
+  background-color: #326094;
+}
+
+
+.pagination-container {
+  display: flex;
+  justify-content: center; /* Center the pagination */
+  margin-top: 20px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+}
+
+.pagination .page-item {
+  margin: 0 5px; /* Add some spacing between pagination items */
+}
+
+.pagination .page-link {
+  background-color: white;
+  color: #326094;
+  border: 1px solid #57A5FF;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #326094;
+  color: white;
+  border-color: #326094;
+}
+
+.pagination .page-link:hover {
+  background-color: #57A5FF;
+  color: white;
+  border-color: #57A5FF;
+}
+
+::-webkit-scrollbar{
+  width: 18px;
+}
+
+::-webkit-scrollbar-track{
+  background: white;
+}
+
+::-webkit-scrollbar-thumb{
+  background: #326094;
+  border-radius: 12px;
+  border: 3px solid white;
 }

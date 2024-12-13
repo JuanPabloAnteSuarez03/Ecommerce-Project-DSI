@@ -194,7 +194,7 @@ function IngresoProducto() {
         <Card.Body>
           {renderStep()}
           {successMessage && <div className="alert alert-success mt-3">{successMessage}</div>}
-          <div className="d-flex justify-content-between">
+          <div className="button-group d-flex justify-content-between">
             <Button
               variant="secondary"
               onClick={prevStep}
