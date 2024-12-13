@@ -29,9 +29,98 @@ button {
 }
 
 button:hover {
-    transform: scale(1.05);
-  }
-  
-  h4 {
-    color: #007bff;
-  }  
+  transform: scale(1.05);
+}
+
+h4 {
+  color: #007bff;
+}
+
+/* Updated styles for all filter inputs with thicker borders */
+.container input[type="text"].form-control,
+.container input[type="number"].form-control,
+.container textarea.form-control,
+.container input[type="file"].form-control,
+.container .form-select {
+  border-radius: 25px;
+  border-color: #57A5FF;
+  border-width: 2px;
+  box-shadow: 0 0 5px rgba(87, 165, 255, 0.5);
+  transition: all 0.3s ease;
+  text-align: center; /* Center the text */
+}
+
+.container input[type="text"].form-control:hover,
+.container input[type="text"].form-control:focus,
+.container input[type="number"].form-control:hover,
+.container input[type="number"].form-control:focus,
+.container textarea.form-control:hover,
+.container textarea.form-control:focus,
+.container input[type="file"].form-control:hover,
+.container input[type="file"].form-control:focus,
+.container .form-select:hover,
+.container .form-select:focus {
+  border-color: #326094;
+  border-width: 2px;
+  box-shadow: 0 0 10px rgba(50, 96, 148, 0.7);
+  outline: none;
+}
+
+/* Special adjustments for textarea */
+.container textarea.form-control {
+  height: 150px;
+  resize: vertical;
+  text-align: left; /* Left-align text for multiline inputs */
+  padding: 15px;
+}
+
+/* Special adjustments for file input */
+.container input[type="file"].form-control {
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+/* Additional styling for select elements */
+.container .form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M1 4l5 5 5-5' fill='none' stroke='%2357A5FF' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  padding-right: 2rem;
+}
+
+/* New styles for buttons */
+.button-group .btn-primary,
+.button-group .btn-secondary,
+.modal-container .btn-primary {
+  border-radius: 25px;
+  border: 2px solid #57A5FF;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 5px rgba(87, 165, 255, 0.5);
+}
+
+.button-group .btn-primary:hover,
+.button-group .btn-primary:focus,
+.button-group .btn-secondary:hover,
+.button-group .btn-secondary:focus,
+.modal-container .btn-primary:hover,
+.modal-container .btn-primary:focus {
+  border-color: #326094;
+  box-shadow: 0 0 10px rgba(50, 96, 148, 0.7);
+  transform: scale(1.05);
+}
+
+/* Specific color adjustments */
+.button-group .btn-primary {
+  background-color: #57A5FF;
+}
+
+.button-group .btn-secondary {
+  background-color: #57A5FF;
+  color: white;
+}
+
+.button-group .btn-primary:hover,
+.button-group .btn-secondary:hover {
+  background-color: #326094;
+}

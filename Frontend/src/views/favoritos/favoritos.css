@@ -1,9 +1,62 @@
 .button-group {
-    display: flex;
-    justify-content: space-between; /* Espacio entre botones */
-    gap: 10px; /* Separación adicional */
-  }
-  
-  .button-container {
-    margin-bottom: 10px; /* Espacio entre botones cuando están en líneas diferentes */
-  }
+  display: flex;
+  justify-content: space-between; /* Espacio entre botones */
+  gap: 15px; /* Increased separation */
+}
+
+.button-container {
+  margin-bottom: 10px; /* Espacio entre botones cuando están en líneas diferentes */
+}
+
+/* Custom button styles for both buttons */
+.button-group .btn-primary,
+.button-group .btn-danger {
+  border-radius: 25px; /* Ensure round borders for both buttons */
+  border-width: 2px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 5px rgba(87, 165, 255, 0.5);
+}
+
+/* Custom button styles for 'Agregar al carrito' */
+.button-group .btn-primary {
+  background-color: #57A5FF;
+  border-color: #57A5FF;
+}
+
+.button-group .btn-primary:hover,
+.button-group .btn-primary:focus {
+  background-color: #326094;
+  border-color: #326094;
+  box-shadow: 0 0 10px rgba(50, 96, 148, 0.7);
+  transform: scale(1.05);
+}
+
+/* Custom button styles for 'Eliminar de Favoritos' */
+.button-group .btn-danger {
+  background-color: #ED1C24;
+  border-color: #ED1C24;
+  box-shadow: 0 0 5px rgba(237, 28, 36, 0.5);
+}
+
+.button-group .btn-danger:hover,
+.button-group .btn-danger:focus {
+  background-color: #9C1218;
+  border-color: #9C1218;
+  box-shadow: 0 0 10px rgba(156, 18, 24, 0.7);
+  transform: scale(1.05);
+} 
+
+
+::-webkit-scrollbar{
+  width: 18px;
+}
+
+::-webkit-scrollbar-track{
+  background: white;
+}
+
+::-webkit-scrollbar-thumb{
+  background: #326094;
+  border-radius: 12px;
+  border: 3px solid white;
+}
