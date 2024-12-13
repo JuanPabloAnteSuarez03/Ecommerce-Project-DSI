@@ -6,7 +6,7 @@ import requests
 import logging
 from shopping_car.models import Carrito
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -53,8 +53,6 @@ class CreateCheckoutSessionView(APIView):
             return JsonResponse({'error': str(e)}, status=400)
 
 
-from rest_framework_simplejwt.tokens import RefreshToken
-
 class StripeWebhookView(APIView):
     def post(self, request, *args, **kwargs):
         payload = request.body
@@ -89,11 +87,12 @@ class StripeWebhookView(APIView):
 
             try:
                 # Genera un token de acceso dinámico para el usuario
-                refresh = RefreshToken.for_user(user) 
-                access_token = str(refresh.access_token)  
+                refresh = RefreshToken.for_user(user)
+                access_token = str(refresh.access_token)
 
                 # Procesa los productos del carrito
                 line_items = stripe.checkout.Session.list_line_items(session['id'])
+                detalles = []
                 for item in line_items['data']:
                     logger.info(f"Procesando item: {item}")
 
@@ -101,24 +100,30 @@ class StripeWebhookView(APIView):
                     producto_id = item['price']['product']
                     cantidad = item['quantity']
 
-                    # Realiza la solicitud autenticada a tu API interna
-                    response = requests.post(
-                        'https://ecommerce-backend-zm43.onrender.com/orders/api/detallePedidos/',
-                        json={
-                            'producto': producto_id,  
-                            'cantidad': cantidad,
-                        },
-                        headers={
-                            'Authorization': f'Bearer {access_token}', 
-                        }
-                    )
+                    detalles.append({
+                        'producto': producto_id,  # Mapea correctamente al ID de tu base de datos
+                        'cantidad': cantidad,
+                    })
 
-                    if response.status_code != 201:
-                        logger.error(f"Error creando orden: {response.text}")
-                        return JsonResponse({'error': 'Error creando la orden'}, status=400)
+                # Realiza la solicitud autenticada al endpoint de pedidos
+                response = requests.post(
+                    'https://ecommerce-backend-zm43.onrender.com/orders/api/pedidos/',
+                    json={
+                        'usuario': user_id,
+                        'estado': True,  # O el valor que represente un pedido completado
+                        'detalles': detalles,
+                    },
+                    headers={
+                        'Authorization': f'Bearer {access_token}', 
+                    }
+                )
+
+                if response.status_code != 201:
+                    logger.error(f"Error creando pedido: {response.text}")
+                    return JsonResponse({'error': 'Error creando el pedido'}, status=400)
 
             except Exception as e:
-                logger.error(f"Error procesando line items: {e}")
+                logger.error(f"Error procesando el webhook: {e}")
                 return JsonResponse({'error': str(e)}, status=500)
 
         return JsonResponse({'status': 'success'}, status=200)
