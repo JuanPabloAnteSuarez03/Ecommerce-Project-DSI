@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
+logger = logging.getLogger(__name__)
 
 class CreateCheckoutSessionView(APIView):
     permission_classes = [IsAuthenticated]
@@ -39,23 +40,25 @@ class CreateCheckoutSessionView(APIView):
                 payment_method_types=['card'],
                 line_items=line_items,
                 mode='payment',
-                metadata={'user_id': user.id},
+                metadata={'user_id': user.id},  # Metadatos para vincular al usuario
                 success_url='https://ecommerce-project-frontend-rhra.onrender.com/productos',
                 cancel_url='https://ecommerce-project-frontend-rhra.onrender.com/carrito',
             )
 
             return JsonResponse({'id': checkout_session.id})
         except Exception as e:
+            logger.error(f"Error creando la sesión de checkout: {e}")
             return JsonResponse({'error': str(e)}, status=400)
 
 
-logger = logging.getLogger(__name__)
-
 class StripeWebhookView(APIView):
+    authentication_classes = []  # El Webhook no requiere autenticación
+    permission_classes = []  # Permitir acceso sin autenticación
+
     def post(self, request, *args, **kwargs):
         payload = request.body
         sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
-        endpoint_secret = settings.SESTRIPE_WEBHOOK_SECRET
+        endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
         try:
             event = stripe.Webhook.construct_event(
@@ -72,20 +75,23 @@ class StripeWebhookView(APIView):
 
         if event['type'] == 'checkout.session.completed':
             session = event['data']['object']
-            logger.info(f"Datos de la sesion: {session}")
-
+            user_id = session['metadata'].get('user_id')
+            logger.info(f"Datos de la sesión: {session}")
+            logger.info(f"ID de usuario: {user_id}")
 
             try:
                 line_items = stripe.checkout.Session.list_line_items(session['id'])
                 for item in line_items['data']:
-                    logger.info(f"Item procesado: {item}")
+                    logger.info(f"Procesando item: {item}")
+
+                    # Aquí necesitas mapear el producto de Stripe con tu base de datos
                     producto_id = item['price']['product']
                     cantidad = item['quantity']
 
                     response = requests.post(
                         'https://ecommerce-backend-zm43.onrender.com/orders/api/detallePedidos/',
                         json={
-                            'producto': producto_id,
+                            'producto': producto_id,  # Mapea correctamente al ID de tu base de datos
                             'cantidad': cantidad,
                         }
                     )
