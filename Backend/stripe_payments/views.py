@@ -74,11 +74,10 @@ class StripeWebhookView(APIView):
 
         if event['type'] == 'checkout.session.completed':
             session = event['data']['object']
-            user_id = session['metadata'].get('user_id')  # Recupera el ID del usuario
+            user_id = session['metadata'].get('user_id')
             logger.info(f"Datos de la sesión: {session}")
             logger.info(f"ID de usuario: {user_id}")
 
-            # Verifica si el usuario existe
             try:
                 user = User.objects.get(id=user_id)
             except User.DoesNotExist:
@@ -86,18 +85,15 @@ class StripeWebhookView(APIView):
                 return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
 
             try:
-                # Genera un token de acceso dinámico para el usuario
+                # Genera un token de acceso dinámico
                 refresh = RefreshToken.for_user(user)
                 access_token = str(refresh.access_token)
 
-                # Procesa los productos del carrito y construye el JSON del pedido
-                line_items = stripe.checkout.Session.list_line_items(session['id'])
+                # Construye el cuerpo de la solicitud
                 detalles = []
+                line_items = stripe.checkout.Session.list_line_items(session['id'])
                 for item in line_items['data']:
-                    logger.info(f"Procesando item: {item}")
-
-                    # Mapear correctamente al ID del producto en tu base de datos
-                    producto_id = item['price']['product']
+                    producto_id = item['price']['product']  # Ajusta esto si es necesario
                     cantidad = item['quantity']
 
                     detalles.append({
@@ -107,11 +103,11 @@ class StripeWebhookView(APIView):
 
                 pedido_data = {
                     "usuario": user_id,
-                    "estado": True,  # Cambia según corresponda
+                    "estado": True,
                     "detalles": detalles
                 }
 
-                # Realiza la solicitud autenticada al endpoint de pedidos
+                # Envía la solicitud al endpoint
                 response = requests.post(
                     'https://ecommerce-backend-zm43.onrender.com/orders/api/pedidos/',
                     json=pedido_data,
