@@ -32,15 +32,29 @@ function Carrito() {
   const handleCheckout = async () => {
     setLoading(true);
     try {
-      const stripe = await stripePromise;
-      const response = await axiosInstance.post('/api/stripe/create-checkout-session/');
-      const { id } = response.data;
+      // Crear los detalles del pedido para la solicitud POST
+      const orderDetails = cart.map(item => ({
+        producto: item.producto.id,
+        cantidad: item.cantidad,
+      }));
 
-      // Redirigir a stripe mediante el id que me da el backend
-      await stripe.redirectToCheckout({ sessionId: id });
+      // Enviar la solicitud POST al endpoint del pedido
+      const orderResponse = await axiosInstance.post('/orders/api/detallePedidos/', orderDetails);
+
+      if (orderResponse.status === 201) {
+        // Continuar con el flujo de Stripe solo si la solicitud POST es exitosa
+        const stripe = await stripePromise;
+        const response = await axiosInstance.post('/api/stripe/create-checkout-session/');
+        const { id } = response.data;
+
+        // Redirigir a Stripe mediante el id que da el backend
+        await stripe.redirectToCheckout({ sessionId: id });
+      } else {
+        alert('Hubo un problema al guardar los detalles del pedido.');
+      }
     } catch (error) {
-      console.error('Error al crear la sesión de pago:', error);
-      alert('Hubo un problema al finalizar la compra.');
+      console.error('Error al procesar la orden:', error);
+      alert('Hubo un problema al procesar la orden.');
     } finally {
       setLoading(false);
     }
@@ -122,8 +136,9 @@ function Carrito() {
                   variant="success"
                   className="w-100 mt-3"
                   onClick={handleCheckout}
+                  disabled={loading}
                 >
-                  Finalizar Compra
+                  {loading ? "Procesando..." : "Finalizar Compra"}
                 </Button>
                 <Button variant="danger" className="w-100 mt-2" onClick={clearCart}>
                   Vaciar Carrito
