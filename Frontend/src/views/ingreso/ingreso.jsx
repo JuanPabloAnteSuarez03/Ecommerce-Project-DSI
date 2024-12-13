@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Card, Button, Form, Col, Row } from 'react-bootstrap';
 import { FaBox, FaDollarSign, FaCalendarAlt, FaPen } from 'react-icons/fa';
 import { BsArrowRight, BsArrowLeft } from 'react-icons/bs';
 
 import axiosInstance from '../../utils/axios';
+import { CategoryContext } from '../../contexts/CategoryContext';
 
 function IngresoProducto() {
+  const { categories, createCategory } = useContext(CategoryContext);
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     productName: '',
@@ -47,29 +50,26 @@ function IngresoProducto() {
     productData.append('categoria', formData.category); // Category ID
     productData.append('precio', formData.sellingPrice);
     productData.append('stock', formData.quantity);
-    productData.append('vendedor','3'); // Fixed seller ID
-  
+    productData.append('vendedor', '3'); // Fixed seller ID
+
     if (formData.productImage) {
       console.log("Archivo seleccionado:", formData.productImage.name);
       productData.append('imagen', formData.productImage);
     } else {
-        console.log("No se seleccionó archivo.");
+      console.log("No se seleccionó archivo.");
     }
-  
-    
+
     try {
-      
       console.log('Datos enviados al backend:');
       for (let pair of productData.entries()) {
-          console.log(`${pair[0]}: ${pair[1]}`);
-      }      
+        console.log(`${pair[0]}: ${pair[1]}`);
+      }
       const response = await axiosInstance.post('/products/api/productos/', productData, {
         headers: {
-            'Content-Type': 'multipart/form-data',
+          'Content-Type': 'multipart/form-data',
         },
-    }); 
-      alert('Producto ingresado con éxito:', response.data); 
-      
+      });
+      alert('Producto ingresado con éxito:', response.data);
     } catch (error) {
       console.error('Error al ingresar el producto:', error);
       alert('Error al ingresar el producto');
@@ -81,10 +81,9 @@ function IngresoProducto() {
       sellingPrice: '',
       quantity: 1,
       productImage: '',
-      productDate: '',
       category: '',
     });
-    
+
     setStep(1);
   };
 
@@ -157,9 +156,11 @@ function IngresoProducto() {
                 onChange={handleChange}
               >
                 <option value="">Selecciona una categoría</option>
-                <option value="1">Electrodomésticos</option>
-                <option value="2">Útiles</option>
-                <option value="3">Libros</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.nombre_categoria}
+                  </option>
+                ))}
               </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
