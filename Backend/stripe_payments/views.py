@@ -16,7 +16,7 @@ class CreateCheckoutSessionView(APIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            user = request.user  # Asegurar de que el usuario esté autenticado
+            user = request.user  # Usuario autenticado
             carrito = Carrito.objects.filter(usuario=user).first()
 
             if not carrito or not carrito.items.exists():
@@ -28,7 +28,7 @@ class CreateCheckoutSessionView(APIView):
                 line_items.append({
                     'price_data': {
                         'currency': 'usd',
-                        'unit_amount': int(product.precio * 100),  # Asegúrate de que price esté en dólares
+                        'unit_amount': int(product.precio * 100),
                         'product_data': {
                             'name': product.nombre_producto,
                         },
@@ -40,6 +40,7 @@ class CreateCheckoutSessionView(APIView):
                 payment_method_types=['card'],
                 line_items=line_items,
                 mode='payment',
+                metadata={'user_id': user.id},  # Agregar el ID del usuario
                 success_url='https://ecommerce-project-frontend-rhra.onrender.com/productos',
                 cancel_url='https://ecommerce-project-frontend-rhra.onrender.com/carrito',
             )
@@ -47,32 +48,3 @@ class CreateCheckoutSessionView(APIView):
             return response.Response({'id': checkout_session.id})
         except Exception as e:
             return response.Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        pass
-        
-
-class StripeWebhookView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        payload = request.body
-        sig_header = request.META['HTTP_STRIPE_SIGNATURE']
-        event = None
-
-        try:
-            event = stripe.Webhook.construct_event(
-                payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
-            )
-        except ValueError as e:
-            return response.Response(status=status.HTTP_400_BAD_REQUEST)
-        except stripe.error.SignatureVerificationError as e:
-            return response.Response(status=status.HTTP_400_BAD_REQUEST)
-
-        if event['type'] == 'checkout.session.completed':
-            session = event['data']['object']
-
-            user_id = session.get('metadata', {}).get('user_id')  
-
-            if user_id:
-                Carrito.objects.filter(usuario_id=user_id).delete()
-
-        return response.Response(status=status.HTTP_200_OK)
