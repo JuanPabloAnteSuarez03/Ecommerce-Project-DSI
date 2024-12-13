@@ -81,6 +81,7 @@ function IngresoProducto() {
       sellingPrice: '',
       quantity: 1,
       productImage: '',
+      productDate: '',
       category: '',
     });
 
