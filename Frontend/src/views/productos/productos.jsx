@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axiosInstance from '../../utils/axios';
 import { useCart } from '../../contexts/CartContext';
-import { useFavorite } from '../../contexts/FavoriteContext';
+import { useFavorite } from '../../contexts/FavoriteContext'; // Importa el contexto de favoritos
 import './productos.css';
 
 function Productos() {
@@ -17,11 +17,10 @@ function Productos() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Use the cart context
   const { addToCart } = useCart();
-
-  const { addFavorite } = useFavorite();
+  const { addFavorite, removeFavorite, favorites } = useFavorite(); // Traemos addFavorite y removeFavorite del contexto de favoritos
 
   const itemsPerPage = 6;
 
@@ -30,25 +29,15 @@ function Productos() {
       try {
         setLoading(true);
         setError(null);
-        
-        // Log the full request details for debugging
-        console.log('Fetching products from:', '/products/api/productos/');
-        
+
         const response = await axiosInstance.get('/products/api/productos/');
-        
-        // Log the response for debugging
-        console.log('Products response:', response.data);
-        
+
         if (!response.data || response.data.length === 0) {
           setError('No se encontraron productos');
         }
-        
+
         setProductos(response.data);
       } catch (error) {
-        // More detailed error logging
-        console.error('Error al obtener productos:', error);
-        console.error('Error details:', error.response ? error.response.data : error.message);
-        
         setError(error.response?.data?.message || 'Hubo un error al cargar los productos');
       } finally {
         setLoading(false);
@@ -57,6 +46,18 @@ function Productos() {
 
     fetchProductos();
   }, []);
+
+  const isProductFavorite = (productId) => {
+    return favorites.some(fav => fav.producto === productId);
+  };
+
+  const handleFavoriteClick = (product) => {
+    if (isProductFavorite(product.id)) {
+      removeFavorite(product.id);
+    } else {
+      addFavorite(product.id);
+    }
+  };
 
   // Filtrar y ordenar los productos
   const filteredProducts = productos
@@ -71,7 +72,6 @@ function Productos() {
       return parseFloat(b.precio) - parseFloat(a.precio);
     });
 
-  // Paginación
   const paginatedProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleSearch = (e) => setSearch(e.target.value);
@@ -175,7 +175,9 @@ function Productos() {
                 <img 
                   src={product.imagen} 
                   className="card-img-top" 
-                  alt={product.nombre_producto}/> {/*style para acomodar la imagen  style={{height: '200px', objectFit: 'cover'}}*/ }
+                  alt={product.nombre_producto}
+                  style={{ height: '200px', objectFit: 'cover' }}
+                />
                 <div className="card-body">
                   <h5 className="card-title">{product.nombre_producto}</h5>
                   <p className="card-text">Precio: ${product.precio}</p>
@@ -183,11 +185,7 @@ function Productos() {
                   <div className="button-group">
                     <button 
                       className="btn btn-primary"
-                      
-                      onClick={() => {
-                        console.log(product); // Verifica que el objeto tenga un campo `imagen`
-                        addToCart(product);
-                      }}
+                      onClick={() => addToCart(product)}
                     >
                       Agregar al carrito
                     </button>
@@ -197,11 +195,24 @@ function Productos() {
                     >
                       Ver detalles
                     </button>
-                    <button 
-                      className="btn btn-warning"
-                      onClick={() => addFavorite(product.id)}
+
+                    {/* Botón de Favorito */}
+                    <button
+                      className="favorite-icon"
+                      onClick={() => handleFavoriteClick(product)}
+                      style={{
+                        backgroundColor: 'transparent',
+                        border: 'none', // No necesita borde adicional aquí
+                        padding: 0, // Para quitar el padding adicional que puede generar un borde visible
+                        cursor: 'pointer',
+                      }}
                     >
-                      Favorito
+                      <i 
+                        className={`fa fa-heart ${isProductFavorite(product.id) ? 'favorited' : ''}`}
+                        style={{
+                          fontSize: '24px'
+                        }}
+                      />
                     </button>
                   </div>
                 </div>
@@ -211,6 +222,7 @@ function Productos() {
         )}
       </div>
 
+      {/* Paginación */}
       <div className="pagination-container">
         <nav aria-label="Page navigation">
           <ul className="pagination">
@@ -225,8 +237,7 @@ function Productos() {
         </nav>
       </div>
 
-      {/* Ventana flotante */}
-      {/* Modal for product details */}
+      {/* Modal para los detalles del producto */}
       {isModalVisible && selectedProduct && (
         <div className="modal-overlay">
           <div className="modal-container">
@@ -253,7 +264,6 @@ function Productos() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
