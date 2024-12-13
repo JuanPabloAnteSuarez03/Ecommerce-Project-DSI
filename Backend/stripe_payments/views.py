@@ -6,6 +6,8 @@ import requests
 import logging
 from shopping_car.models import Carrito
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import AccessToken
+from django.contrib.auth.models import User
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -51,10 +53,9 @@ class CreateCheckoutSessionView(APIView):
             return JsonResponse({'error': str(e)}, status=400)
 
 
-class StripeWebhookView(APIView):
-    authentication_classes = []  # El Webhook no requiere autenticación
-    permission_classes = []  # Permitir acceso sin autenticación
+from rest_framework_simplejwt.tokens import RefreshToken
 
+class StripeWebhookView(APIView):
     def post(self, request, *args, **kwargs):
         payload = request.body
         sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
@@ -75,30 +76,47 @@ class StripeWebhookView(APIView):
 
         if event['type'] == 'checkout.session.completed':
             session = event['data']['object']
-            user_id = session['metadata'].get('user_id')
+            user_id = session['metadata'].get('user_id')  # Recupera el ID del usuario
             logger.info(f"Datos de la sesión: {session}")
             logger.info(f"ID de usuario: {user_id}")
 
+            # Verifica si el usuario existe
             try:
+                user = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                logger.error(f"Usuario con ID {user_id} no encontrado")
+                return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
+
+            try:
+                # Genera un token de acceso dinámico para el usuario
+                refresh = RefreshToken.for_user(user) 
+                access_token = str(refresh.access_token)  
+
+                # Procesa los productos del carrito
                 line_items = stripe.checkout.Session.list_line_items(session['id'])
                 for item in line_items['data']:
                     logger.info(f"Procesando item: {item}")
 
-                    # Aquí necesitas mapear el producto de Stripe con tu base de datos
+                    # Mapear correctamente al ID del producto en tu base de datos
                     producto_id = item['price']['product']
                     cantidad = item['quantity']
 
+                    # Realiza la solicitud autenticada a tu API interna
                     response = requests.post(
                         'https://ecommerce-backend-zm43.onrender.com/orders/api/detallePedidos/',
                         json={
-                            'producto': producto_id,  # Mapea correctamente al ID de tu base de datos
+                            'producto': producto_id,  
                             'cantidad': cantidad,
+                        },
+                        headers={
+                            'Authorization': f'Bearer {access_token}', 
                         }
                     )
 
                     if response.status_code != 201:
                         logger.error(f"Error creando orden: {response.text}")
                         return JsonResponse({'error': 'Error creando la orden'}, status=400)
+
             except Exception as e:
                 logger.error(f"Error procesando line items: {e}")
                 return JsonResponse({'error': str(e)}, status=500)
